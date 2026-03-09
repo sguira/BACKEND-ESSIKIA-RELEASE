@@ -179,10 +179,12 @@ public class AuthService {
         System.out.println("Creation formateur ..." + formateur.getEmail());
         Utilisateur utilisateur = utilisateurRepo.findByEmail(formateur.getEmail()).orElse(null);
         if (utilisateur != null) {
+
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("L'utilisateur existe déja");
         }
 
         try {
+            String password = formateur.getPassword();
             formateur.setPassword(passwordEncoder.encode(formateur.getPassword()));
             formateur.setIsConfirmed(false);
             formateur.setType("formateur");
@@ -196,7 +198,9 @@ public class AuthService {
             String res = emailService.sendHtlmlMail(email,
                     creerHtmlBody(formateur, "Bienvenue Monsieur/Madame " + formateur.getNom() +
                             "<br> Votre compte formateur a été créé avec succès sur la plateforme Essikia.<br>" +
-                            "Vous pouvez désormais vous connecter et commencer à utiliser nos services.<br>"
+                            "Vous pouvez désormais vous connecter et commencer à utiliser nos services.<br>" +
+                            "Votre mot de passe par defaut est : <u style='color: red;font-size: 26px;'>"
+                            + password + "</u><br>"
                             + "Veuillez confirmer votre compte en utilisant le code suivant : <u style='color: red;font-size: 26px;'>"
                             + formateur.getCodeConfirm() + "</u><br>"));
 
@@ -257,6 +261,10 @@ public class AuthService {
             if (type.equals("etudiant")) {
                 Etudiant etudiant = etudiantRepo.findByEmail(u.getEmail());
                 System.out.println("Etudiant trouvé :" + etudiant.getEmail());
+                if (etudiant.isBlocked()) {
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                            .body("Votre compte est bloqué, veuillez contacter l'administrateur");
+                }
                 if (etudiant != null && passwordEncoder.matches(u.getPassword(), etudiant.getPassword())) {
                     // String token = jwtUtils.generateToken(etudiant.getId());
                     System.out.println("Authentifié" + etudiant.getEmail());
@@ -484,6 +492,40 @@ public class AuthService {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Une erreur est survenue");
+        }
+    }
+
+    public void resendResetCode(String email) {
+        try {
+            Utilisateur u = utilisateurRepo.findByEmail(email).orElse(null);
+            if (u == null) {
+                System.out.println("Utilisateur non trouvé pour l'email: " + email);
+                return;
+            }
+            String code = generateCode();
+            u.setResetCode(code);
+            utilisateurRepo.save(u);
+
+            BodyEmail emailBody = new BodyEmail();
+            emailBody.setRecipient(email);
+            emailBody.setBody("Réinitialisation de mot de passe");
+            String res = emailService.sendHtlmlMail(emailBody,
+                    creerHtmlBody(u, "Bonjour " + u.getNom() +
+                            "<br> Vous avez demandé une réinitialisation de mot de passe. <br>" +
+                            "Utilisez le code suivant pour réinitialiser votre mot de passe : <u style='color: red;font-size: 26px;'>"
+                            + code + "</u><br>" +
+                            "Si vous n'avez pas demandé cette réinitialisation, veuillez ignorer cet email.<br>"));
+
+            if (!res.equals("Mail Sent Successfully...")) {
+                throw new Exception("Erreur lors de l'envoi de l'email");
+            }
+
+            System.out.println("Code de réinitialisation renvoyé avec succès pour l'email: " + email);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println(
+                    "Une erreur est survenue lors de la tentative de renvoi du code de réinitialisation pour l'email: "
+                            + email);
         }
     }
 

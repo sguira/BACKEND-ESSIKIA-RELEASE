@@ -5,10 +5,12 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.formation.demo.dto.ValidationPlanification;
+import com.formation.demo.entities.Etudiant;
 import com.formation.demo.entities.Groupe;
 import com.formation.demo.entities.Message;
 import com.formation.demo.entities.Planification;
 import com.formation.demo.enumeration.PlanificationStatus;
+import com.formation.demo.repository.EtudiantRepo;
 import com.formation.demo.repository.MessageRepository;
 import com.formation.demo.repository.PlanificationRepo;
 
@@ -22,6 +24,7 @@ public class AdminService {
     private final PlanificationRepo planificationRepo;
     private final GroupeService groupeService;
     private final MessageRepository messageRepository;
+    private final EtudiantRepo etudiantRepo;
 
     public Planification validationPlanification(ValidationPlanification validationPlanification) {
         Planification planification = planificationService
@@ -88,5 +91,25 @@ public class AdminService {
             planificationRepo.save(planification);
         }
         return planification;
+    }
+
+    public Etudiant bloquerEtudiant(String email) {
+        Etudiant etudiant = etudiantRepo.findByEmail(email);
+        if (etudiant != null) {
+            etudiant.setBlocked(true);
+            return etudiantRepo.save(etudiant);
+        } else {
+            throw new RuntimeException("Étudiant non trouvé avec l'email : " + email);
+        }
+    }
+
+    public Etudiant debloquerEtudiant(String email) {
+        Etudiant etudiant = etudiantRepo.findByEmail(email);
+        if (etudiant != null) {
+            etudiant.setBlocked(false);
+            return etudiantRepo.save(etudiant);
+        } else {
+            throw new RuntimeException("Étudiant non trouvé avec l'email : " + email);
+        }
     }
 }

@@ -10,6 +10,7 @@ import com.formation.demo.entities.Seance;
 import com.formation.demo.entities.VideoExplicative;
 import com.formation.demo.repository.FichierRepo;
 import com.formation.demo.repository.SeanceRepository;
+import com.formation.demo.services.FichierService;
 import com.formation.demo.services.FileService;
 import com.formation.demo.services.SupaBaseService;
 import com.formation.demo.services.VideoExplicativeService;
@@ -23,6 +24,7 @@ import java.util.Map;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -38,6 +40,7 @@ public class SeanceController {
     private final SupaBaseService supaBaseService;
     private final FichierRepo fichierRepo;
     private final VideoExplicativeService videoExplicativeService;
+    private final FichierService fichierService;
 
     @PostMapping("/add")
     public ResponseEntity<Seance> saveSeance(@RequestBody Seance seance) {
@@ -121,7 +124,10 @@ public class SeanceController {
             if (seance == null) {
                 return ResponseEntity.status(404).body("Aucune seance trouvée");
             }
-            seance.supprimerFichier(fichiers);
+            System.out.println("Suppression du fichier: " + fichiers.getId() + " de la séance: " + seanceId);
+            fichierService.deleteFile(fichiers.getId());
+            seance.deleteFileByid(fichiers.getId());
+            System.out.println("Fichier supprimé de la séance: " + fichiers.getId());
             seanceRepository.save(seance);
             return ResponseEntity.ok().body(fichiers);
         } catch (Exception e) {
@@ -130,4 +136,18 @@ public class SeanceController {
         }
     }
 
+    @DeleteMapping("/{seanceId}")
+    public ResponseEntity<?> deleteSeance(@PathVariable String seanceId) {
+        try {
+            Seance seance = seanceRepository.findById(seanceId).orElse(null);
+            if (seance == null) {
+                return ResponseEntity.status(404).body("Aucune seance trouvée");
+            }
+            seanceRepository.delete(seance);
+            return ResponseEntity.ok().body("Séance supprimée avec succès");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Erreur de suppression de la séance");
+        }
+    }
 }

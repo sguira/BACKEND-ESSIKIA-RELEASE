@@ -80,6 +80,16 @@ public class AuthController {
         return authService.sendResetCode(email);
     }
 
+    @PostMapping("/resend-reset-code")
+    ResponseEntity<Object> resendResetCode(@RequestParam("email") String email) {
+        try {
+            authService.resendResetCode(email);
+            return ResponseEntity.ok().body("Code de réinitialisation renvoyé avec succès");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Erreur lors de l'envoi du code de réinitialisation");
+        }
+    }
+
     @PostMapping("/verify-reset-code")
     ResponseEntity<Object> resetPassword(@RequestBody ResetPasswordDTO resetPasswordDTO) {
         return authService.verifyResetCode(resetPasswordDTO.getEmail(), resetPasswordDTO.getCode());

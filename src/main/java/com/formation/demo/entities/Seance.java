@@ -43,4 +43,8 @@ public class Seance {
     public void supprimerFichier(Fichiers fichiers) {
         this.files.remove(fichiers);
     }
+
+    public void deleteFileByid(String fileId) {
+        this.files.removeIf(fichier -> fichier.getId().equals(fileId));
+    }
 }

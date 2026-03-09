@@ -25,6 +25,8 @@ import lombok.RequiredArgsConstructor;
 
 @Document
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Utilisateur {
 
     @Id
@@ -83,4 +85,5 @@ public class Utilisateur {
     public void removePromotion(Promotion promotion) {
         this.promotions.remove(promotion);
     }
+
 }

@@ -204,4 +204,16 @@ public class ModuleService {
         return seances;
     }
 
+    public void deleteSeanceFromModule(String moduleId, String seanceId) {
+        Modules module = modulesRepository.findById(moduleId).orElse(null);
+        if (module != null) {
+            Seance seance = seanceRepository.findById(seanceId).orElse(null);
+            if (seance != null && seance.getModule() != null && seance.getModule().getId().equals(moduleId)) {
+                module.getSeances().removeIf(s -> s.getId().equals(seanceId));
+                modulesRepository.save(module);
+                seanceRepository.deleteById(seanceId);
+            }
+        }
+    }
+
 }

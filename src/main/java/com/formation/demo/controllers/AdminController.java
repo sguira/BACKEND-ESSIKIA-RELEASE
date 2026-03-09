@@ -60,4 +60,25 @@ public class AdminController {
         }
     }
 
+    @PostMapping("/bloquer-etudiant")
+    public ResponseEntity<Object> bloquerEtudiant(@RequestBody Etudiant etudiant) {
+        try {
+            Etudiant updatedEtudiant = adminService.bloquerEtudiant(etudiant.getEmail());
+            return ResponseEntity.ok(updatedEtudiant);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/debloquer-etudiant")
+    public ResponseEntity<Object> debloquerEtudiant(@RequestBody Etudiant etudiant) {
+        try {
+            Etudiant updatedEtudiant = adminService.debloquerEtudiant(etudiant.getEmail());
+            return ResponseEntity.ok(updatedEtudiant);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -71,6 +72,17 @@ public class ModuleController {
     @PostMapping("add-seance/{moduleId}")
     ResponseEntity<Object> _addSeanceToModule(@PathVariable String moduleId, @RequestBody Seance seance) {
         return moduleService.addSeanceToModule(moduleId, seance);
+    }
+
+    @DeleteMapping("{moduleId}")
+    public ResponseEntity<Object> deleteModule(@PathVariable String moduleId) {
+        return moduleService.deleteModule(moduleId);
+    }
+
+    @DeleteMapping("/remove-seance/{moduleId}")
+    public ResponseEntity<Object> removeSeanceFromModule(@PathVariable String moduleId, @RequestBody Seance seance) {
+        moduleService.deleteSeanceFromModule(moduleId, seance.getId());
+        return ResponseEntity.ok().body("Séance supprimée du module avec succès");
     }
 
 }
