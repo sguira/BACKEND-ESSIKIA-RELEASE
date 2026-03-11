@@ -13,4 +13,6 @@ public interface UtilisateurRepo extends MongoRepository<Utilisateur, String> {
 
     public List<Utilisateur> findByRole(String role);
 
+    public void deleteByEmail(String email);
+
 }

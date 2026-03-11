@@ -9,16 +9,22 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import com.formation.demo.dto.BloqueFormateurDTO;
+import com.formation.demo.dto.SendRappel;
 import com.formation.demo.email.BodyEmail;
 import com.formation.demo.email.EmailServiceImp;
 import com.formation.demo.entities.Formateur;
 import com.formation.demo.entities.FormateurBloqued;
 import com.formation.demo.entities.Groupe;
 import com.formation.demo.entities.Matiere;
+import com.formation.demo.entities.Message;
+import com.formation.demo.entities.Planification;
 import com.formation.demo.entities.Promotion;
 import com.formation.demo.entities.Utilisateur;
+import com.formation.demo.enumeration.PlanificationStatus;
 import com.formation.demo.repository.BloquedFormateurRepository;
 import com.formation.demo.repository.FormateurRepo;
+import com.formation.demo.repository.MessageRepository;
+import com.formation.demo.repository.PlanificationRepo;
 import com.formation.demo.repository.PromotionRepository;
 import com.formation.demo.repository.UtilisateurRepo;
 
@@ -35,6 +41,8 @@ public class FormateurService {
     private final EmailServiceImp emailService;
     private final BloquedFormateurRepository bloquedFormateurRepository;
     private final UtilisateurRepo utilisateurRepo;
+    private final PlanificationRepo planificationRepo;
+    private final MessageRepository messageRepository;
 
     public ResponseEntity<Object> listeFormateur() {
         try {
@@ -164,6 +172,42 @@ public class FormateurService {
                 "<p>" + message + "</p>" +
                 "</body>" +
                 "</html>";
+    }
+
+    // envoyé rapport d'une séance
+    public void envoyerRappel(SendRappel sendRappel) {
+
+        if (sendRappel.getFormateurEmail() == null || sendRappel.getFormateurEmail().isEmpty()) {
+            System.out.println("Formateur email is missing in the rappel request.");
+            throw new RuntimeException("Formateur email is required to send a rappel.");
+        }
+
+        Planification planification = planificationRepo.findById(sendRappel.getPlanificationId()).orElse(null);
+        if (planification == null) {
+            System.out.println("Planification not found with id: " + sendRappel.getPlanificationId());
+            throw new RuntimeException("Planification not found with id: " + sendRappel.getPlanificationId());
+        }
+        if (planification.getStatus() != PlanificationStatus.ACCEPTER) {
+            System.out.println("Planification with id: " + sendRappel.getPlanificationId()
+                    + " is not accepted. Current status: " + planification.getStatus());
+            throw new RuntimeException(
+                    "Only accepted planifications can be sent as rappel. Current status: " + planification.getStatus());
+        }
+
+        Formateur formateur = formateurRepo.findByEmail(sendRappel.getFormateurEmail());
+
+        Groupe groupe = groupeService.promotionGroupe(planification.getPromotionId());
+        Message message = new Message();
+        message.setUser(formateur);
+        message.setGroupe(groupe.getId());
+        message.setPromotion(planification.getPromotionId());
+        message.setContent("⏰ Rappel de séance\n\n"
+                + "La séance prévue le " + planification.getDateDebut() + " approche à grands pas !\n\n" +
+                "Assurez-vous d'être prêt(e) et de vérifier les détails de la séance dans votre espace formateur.\n\n"
+                + "Lien de la séance :" + planification.getLink());
+
+        messageRepository.save(message);
+
     }
 
     // public ResponseEntity<Object> listesDesMatiere(String id) {

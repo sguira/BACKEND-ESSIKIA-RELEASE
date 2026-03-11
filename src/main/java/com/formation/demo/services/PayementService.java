@@ -18,7 +18,6 @@ public class PayementService {
     public String createPaymentIntent(IntentPaymentRequestDTO paymentRequest)
             throws StripeException {
         try {
-            Stripe.apiKey = "";
             System.out.println("Amount: " + paymentRequest.getAmount());
             Map<String, Object> params = new HashMap<>();
             params.put("amount", 50);
@@ -36,7 +35,6 @@ public class PayementService {
 
     public boolean checkPaymentStatus(String paymentIntentId) throws StripeException {
         try {
-            Stripe.apiKey = "";
             PaymentIntent paymentIntent = PaymentIntent.retrieve(paymentIntentId);
             if ("succeeded".equals(paymentIntent.getStatus())) {
                 return true;

@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.formation.demo.dto.BloqueFormateurDTO;
+import com.formation.demo.dto.SendRappel;
 import com.formation.demo.entities.Formateur;
 import com.formation.demo.services.AuthService;
 import com.formation.demo.services.FormateurService;
@@ -59,6 +60,13 @@ public class FormateurController {
     ResponseEntity<?> debloquer(@RequestBody BloqueFormateurDTO bloqueFormateurDTO) {
         formateurService.debloquerFormateur(bloqueFormateurDTO);
         return ResponseEntity.ok("Le formateur a été débloqué");
+    }
+
+    @PostMapping("/envoyer-rappel")
+    ResponseEntity<?> envoyerRappel(@RequestBody SendRappel sendRappel) {
+        System.out.println("Envoi de rappel pour le formateur : " + sendRappel.getFormateurEmail());
+        formateurService.envoyerRappel(sendRappel);
+        return ResponseEntity.ok("Rappel envoyé au formateur");
     }
 
     // @GetMapping("/matieres")

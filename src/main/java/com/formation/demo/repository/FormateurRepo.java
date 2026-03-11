@@ -8,4 +8,6 @@ public interface FormateurRepo extends MongoRepository<Formateur, String> {
 
     public Formateur findByEmail(String id);
 
+    public void deleteByEmail(String email);
+
 }

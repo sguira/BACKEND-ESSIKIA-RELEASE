@@ -6,13 +6,17 @@ import org.springframework.stereotype.Service;
 
 import com.formation.demo.dto.ValidationPlanification;
 import com.formation.demo.entities.Etudiant;
+import com.formation.demo.entities.Formateur;
 import com.formation.demo.entities.Groupe;
 import com.formation.demo.entities.Message;
 import com.formation.demo.entities.Planification;
+import com.formation.demo.entities.Utilisateur;
 import com.formation.demo.enumeration.PlanificationStatus;
 import com.formation.demo.repository.EtudiantRepo;
+import com.formation.demo.repository.FormateurRepo;
 import com.formation.demo.repository.MessageRepository;
 import com.formation.demo.repository.PlanificationRepo;
+import com.formation.demo.repository.UtilisateurRepo;
 
 import lombok.RequiredArgsConstructor;
 
@@ -25,6 +29,8 @@ public class AdminService {
     private final GroupeService groupeService;
     private final MessageRepository messageRepository;
     private final EtudiantRepo etudiantRepo;
+    private final FormateurRepo formateurRepo;
+    private final UtilisateurRepo utilisateurRepo;
 
     public Planification validationPlanification(ValidationPlanification validationPlanification) {
         Planification planification = planificationService
@@ -111,5 +117,30 @@ public class AdminService {
         } else {
             throw new RuntimeException("Étudiant non trouvé avec l'email : " + email);
         }
+    }
+
+    public void suppressionFormateur(String email) {
+        formateurRepo.deleteByEmail(email);
+        utilisateurRepo.deleteByEmail(email);
+    }
+
+    public Formateur updFormateur(Formateur formateur) {
+
+        Formateur existingFormateur = formateurRepo.findByEmail(formateur.getEmail());
+        Utilisateur existingUtilisateur = utilisateurRepo.findByEmail(formateur.getEmail()).orElse(null);
+        if (existingFormateur == null || existingUtilisateur == null) {
+            throw new RuntimeException("Formateur non trouvé avec l'email : " + formateur.getEmail());
+        }
+        existingFormateur.setNom(formateur.getNom());
+        existingFormateur.setAdresse(formateur.getAdresse());
+        existingFormateur.setTelephone(formateur.getTelephone());
+        existingFormateur.setPrenom(formateur.getPrenom());
+        existingFormateur.setCin(formateur.getCin());
+        existingUtilisateur.setNom(formateur.getNom());
+        existingUtilisateur.setPrenom(formateur.getPrenom());
+        existingUtilisateur.setAdresse(formateur.getAdresse());
+        existingUtilisateur.setTelephone(formateur.getTelephone());
+        utilisateurRepo.save(existingUtilisateur);
+        return formateurRepo.save(existingFormateur);
     }
 }

@@ -69,20 +69,17 @@ public class QuizzService {
         submission.setPassed(score >= quiz.getMinimumScore());
         submission.setQuizzId(quizId);
         submission.setUserId(userId);
-
+        System.out.println("Score calculé: " + score + " pour le quizId: " + quizId + " et userId: " + userId);
         return quizzAnswerRepository.save(submission);
     }
 
     private int calculateScore(Quizz quiz, List<Answer> answers) {
         int total = 0;
-
         for (Question q : quiz.getQuestions()) {
-
             Answer answer = answers.stream()
                     .filter(a -> a.getQuestionId().equals(String.valueOf(q.getId())))
                     .findFirst()
                     .orElse(null);
-
             if (answer == null)
                 continue;
 

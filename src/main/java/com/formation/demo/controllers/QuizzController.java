@@ -59,7 +59,6 @@ public class QuizzController {
     public ResponseEntity<?> submitQuizz(@PathVariable String userId, @PathVariable String quizzId,
             @RequestBody QuizSubmission answers) {
         try {
-            ;
             return ResponseEntity.ok(quizzService.submitQuiz(quizzId, userId, answers));
         } catch (Exception e) {
             e.printStackTrace();

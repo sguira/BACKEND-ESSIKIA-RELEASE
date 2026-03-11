@@ -3,14 +3,17 @@ package com.formation.demo.controllers;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.formation.demo.dto.ValidationPlanification;
 import com.formation.demo.entities.Etudiant;
+import com.formation.demo.entities.Formateur;
 import com.formation.demo.entities.Planification;
 import com.formation.demo.services.AdminService;
 import com.formation.demo.services.EtudiantService;
@@ -76,6 +79,28 @@ public class AdminController {
         try {
             Etudiant updatedEtudiant = adminService.debloquerEtudiant(etudiant.getEmail());
             return ResponseEntity.ok(updatedEtudiant);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/supprimer-formateur")
+    public ResponseEntity<Object> supprimerFormateur(@RequestBody String email) {
+        try {
+            adminService.suppressionFormateur(email);
+            return ResponseEntity.ok("Formateur supprimé avec succès");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/update-formateur")
+    public ResponseEntity<Object> updateFormateur(@RequestBody Formateur formateur) {
+        try {
+            Formateur updatedFormateur = adminService.updFormateur(formateur);
+            return ResponseEntity.ok(updatedFormateur);
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.badRequest().body(e.getMessage());
