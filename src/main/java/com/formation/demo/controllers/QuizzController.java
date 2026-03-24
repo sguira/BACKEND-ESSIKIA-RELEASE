@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.formation.demo.entities.QuizSubmission;
 import com.formation.demo.entities.Quizz;
-import com.formation.demo.repository.QuizzRepository;
 import com.formation.demo.services.QuizzService;
 
 import lombok.RequiredArgsConstructor;
@@ -28,6 +27,8 @@ public class QuizzController {
     @PostMapping("/create")
     public ResponseEntity createQuizz(@RequestBody Quizz quizz) {
         try {
+            System.out.println("quizz " + quizz.toString());
+            System.out.println("Is Active " + quizz.isActive());
             return ResponseEntity.ok(quizzService.createQuizz(quizz));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());

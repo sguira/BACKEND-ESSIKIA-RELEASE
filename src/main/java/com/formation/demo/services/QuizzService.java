@@ -88,7 +88,7 @@ public class QuizzService {
             List<Options> options = q.getOptions();
 
             for (int i = 0; i < options.size(); i++) {
-                if (options.get(i).isCorrect()) {
+                if (options.get(i).getIsCorrect() == 1) {
                     correctIndexes.add(i);
                 }
             }
