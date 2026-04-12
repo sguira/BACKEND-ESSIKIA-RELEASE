@@ -2,6 +2,7 @@ package com.formation.demo.controllers;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -40,6 +41,13 @@ public class VideoExplicativeController {
         } else {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    // suppression d'une vidéo explicative par son ID
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteVideoExplicative(@PathVariable String id) {
+        videoExplicativeService.deleteVideoExplicativeById(id);
+        return ResponseEntity.ok().build();
     }
 
 }

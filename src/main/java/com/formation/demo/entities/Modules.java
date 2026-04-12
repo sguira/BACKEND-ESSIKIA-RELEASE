@@ -27,7 +27,7 @@ public class Modules {
     private int nbSemaine;
     @DBRef
     private List<Matiere> matieres;
-
+    private boolean notFree = false;
     private List<Seance> seances = new ArrayList<>();
 
     public void ajouterSeance(Seance seance) {

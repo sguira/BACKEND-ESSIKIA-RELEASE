@@ -1,5 +1,6 @@
 package com.formation.demo.services;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -57,6 +58,16 @@ public class UtilisateurService {
 
     public List<Utilisateur> getAllAdmin() {
         return utilisateurRepository.findByRole("ADMIN");
+    }
+
+    public List<Utilisateur> getAllAdmin(String role) {
+        List<Utilisateur> utilisateurs = new ArrayList<Utilisateur>();
+        for (Utilisateur utilisateur : utilisateurRepository.findAll()) {
+            if (utilisateur.getRole().equals(role)) {
+                utilisateurs.add(utilisateur);
+            }
+        }
+        return utilisateurs;
     }
 
 }

@@ -216,4 +216,24 @@ public class ModuleService {
         }
     }
 
+    public void makeNotFree(String moduleId) {
+        try {
+            Modules module = modulesRepository.findById(moduleId).orElse(null);
+            if (module != null) {
+                module.setNotFree(true);
+                modulesRepository.save(module);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void makeFree(String moduleId) {
+        Modules module = modulesRepository.findById(moduleId).orElse(null);
+        if (module != null) {
+            module.setNotFree(false);
+            modulesRepository.save(module);
+        }
+    }
+
 }

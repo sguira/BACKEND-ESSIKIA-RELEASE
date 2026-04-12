@@ -85,4 +85,18 @@ public class ModuleController {
         return ResponseEntity.ok().body("Séance supprimée du module avec succès");
     }
 
+    @PostMapping("/make-not-free/{moduleId}")
+    public ResponseEntity<Object> makeModuleNotFree(@PathVariable String moduleId) {
+        System.out.println("Module ID: " + moduleId);
+        moduleService.makeNotFree(moduleId);
+        return ResponseEntity.ok().body("Module marqué comme non gratuit avec succès");
+    }
+
+    @PostMapping("/make-free/{moduleId}")
+    public ResponseEntity<Object> makeModuleFree(@PathVariable String moduleId) {
+        System.out.println("Module ID: " + moduleId);
+        moduleService.makeFree(moduleId);
+        return ResponseEntity.ok().body("Module marqué comme gratuit avec succès");
+    }
+
 }
