@@ -48,8 +48,12 @@ public class AuthService {
         System.out.println("Mot de passe " + utilisateur.getPassword() + "\n\n");
 
         Utilisateur u = utilisateurRepo.findByEmail(utilisateur.getEmail()).orElse(null);
+        Etudiant e_ = etudiantRepo.findByEmail(utilisateur.getEmail());
         // System.out.println(u.getEmail());
         if (u != null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("L'utilisateur existe déja");
+        }
+        if (e_ != null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("L'utilisateur existe déja");
         }
         utilisateur.setPassword(passwordEncoder.encode(utilisateur.getPassword()));
@@ -344,10 +348,10 @@ public class AuthService {
                 String type = utilisateur.getType();
                 if (type.equals("etudiant")) {
                     Etudiant etudiant = etudiantRepo.findByEmail(email);
-                    utilisateur.setConfirmed(true);
-                    utilisateur.setIsConfirmed(true);
 
                     if (utilisateur.getCodeConfirm().equals(code)) {
+                        utilisateur.setConfirmed(true);
+                        utilisateur.setIsConfirmed(true);
                         etudiant.setConfirmed(true);
                         etudiantRepo.save(etudiant);
                         utilisateurRepo.save(utilisateur);
@@ -467,11 +471,12 @@ public class AuthService {
     public ResponseEntity<Object> sendResetCode(String email) {
         try {
             Utilisateur u = utilisateurRepo.findByEmail(email).orElse(null);
+
             if (u == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Utilisateur non trouvé");
             }
             String code = generateCode();
-            u.setResetCode(code);
+            u.setCodeConfirm(code);
             utilisateurRepo.save(u);
 
             BodyEmail emailBody = new BodyEmail();
@@ -503,11 +508,14 @@ public class AuthService {
                 return;
             }
             String code = generateCode();
-            u.setResetCode(code);
+            u.setCodeConfirm(code);
             utilisateurRepo.save(u);
+            System.out.println("Role de l'utilisateur: " + u.getRole());
+            System.out.println("Etudiant trouvé pour l'email: " + email);
 
             BodyEmail emailBody = new BodyEmail();
             emailBody.setRecipient(email);
+
             emailBody.setBody("Réinitialisation de mot de passe");
             String res = emailService.sendHtlmlMail(emailBody,
                     creerHtmlBody(u, "Bonjour " + u.getNom() +

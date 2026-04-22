@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.formation.demo.entities.Etudiant;
+import com.formation.demo.entities.Fichiers;
 import com.formation.demo.entities.Matiere;
 import com.formation.demo.entities.Modules;
 import com.formation.demo.entities.Seance;
@@ -236,4 +237,18 @@ public class ModuleService {
         }
     }
 
+    public void updateMiniature(String moduleId, Fichiers fichier) {
+        try {
+            Modules module = modulesRepository.findById(moduleId).orElse(null);
+            if (module == null) {
+                throw new Exception("Module non trouvé");
+            }
+            if (module != null) {
+                module.setMiniature(fichier);
+                modulesRepository.save(module);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

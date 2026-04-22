@@ -21,8 +21,8 @@ public class EmailServiceImp implements interfaceSendMail {
     @Autowired
     JavaMailSender javaMailSender;
 
-    // @Value("${spring.mail.username}")
-    private String sender = "support@essikia.com";
+    @Value("${spring.mail.username}")
+    private String sender;
 
     @Override
     public String sendSimpleMessage(BodyEmail details) {
@@ -34,11 +34,11 @@ public class EmailServiceImp implements interfaceSendMail {
             SimpleMailMessage mailMessage = new SimpleMailMessage();
 
             // Setting up necessary details
+            System.out.print("Sender :: " + sender + "\n\n\n");
             mailMessage.setFrom(sender);
             mailMessage.setTo(details.getRecipient());
             mailMessage.setText(details.getMessage());
             mailMessage.setSubject(details.getBody());
-
             // Sending the mail
             javaMailSender.send(mailMessage);
             return "Mail Sent Successfully...";
@@ -84,6 +84,7 @@ public class EmailServiceImp implements interfaceSendMail {
         try {
             // ClassPathResource imagResource = new
             // ClassPathResource("/static/image/lg.png");
+            System.out.println("Sender :: " + sender + "\n\n\n");
             mimeMessageHelper = new MimeMessageHelper(minMessage, true, "UTF-8");
             mimeMessageHelper.setTo(email.recipient);
             mimeMessageHelper.setFrom(sender);

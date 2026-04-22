@@ -12,6 +12,7 @@ import com.formation.demo.repository.FichierRepo;
 import com.formation.demo.repository.SeanceRepository;
 import com.formation.demo.services.FichierService;
 import com.formation.demo.services.FileService;
+import com.formation.demo.services.R2Service;
 import com.formation.demo.services.SupaBaseService;
 import com.formation.demo.services.VideoExplicativeService;
 
@@ -41,6 +42,7 @@ public class SeanceController {
     private final FichierRepo fichierRepo;
     private final VideoExplicativeService videoExplicativeService;
     private final FichierService fichierService;
+    private final R2Service r2Service;
 
     @PostMapping("/add")
     public ResponseEntity<Seance> saveSeance(@RequestBody Seance seance) {
@@ -125,8 +127,11 @@ public class SeanceController {
                 return ResponseEntity.status(404).body("Aucune seance trouvée");
             }
             System.out.println("Suppression du fichier: " + fichiers.getId() + " de la séance: " + seanceId);
-            fichierService.deleteFile(fichiers.getId());
+            // fichierService.deleteFile(fichiers.getId());
+            System.out.println("Suppression du fichier de R2 avec URL: " + fichiers.getUrl());
+            r2Service.deleteFile(fichiers.getUrl());
             seance.deleteFileByid(fichiers.getId());
+
             System.out.println("Fichier supprimé de la séance: " + fichiers.getId());
             seanceRepository.save(seance);
             return ResponseEntity.ok().body(fichiers);
@@ -149,5 +154,39 @@ public class SeanceController {
             e.printStackTrace();
             return ResponseEntity.status(500).body("Erreur de suppression de la séance");
         }
+
     }
+
+    @PostMapping("/delete-video-quickoff")
+    public ResponseEntity<?> deleteVideoQuickOffFromSeance(@RequestParam String seanceId,
+            @RequestParam String fileKey) {
+        try {
+            Seance seance = seanceRepository.findById(seanceId).orElse(null);
+            if (seance == null) {
+                return ResponseEntity.status(404).body("Aucune seance trouvée");
+            }
+            Fichiers videoQuickOff = seance.getVideoQuickOff();
+            if (videoQuickOff == null) {
+                return ResponseEntity.status(404).body("Aucune vidéo QuickOff associée à cette séance");
+            }
+            r2Service.deleteFile(fileKey);
+            seance.setVideoQuickOff(null);
+            seanceRepository.save(seance);
+            return ResponseEntity.ok().body("Vidéo QuickOff supprimée de la séance avec succès");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Erreur de suppression de la vidéo QuickOff de la séance");
+        }
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Seance> getSeanceById(@PathVariable String id) {
+        Seance seance = seanceRepository.findById(id).orElse(null);
+        if (seance != null) {
+            return ResponseEntity.ok(seance);
+        } else {
+            return ResponseEntity.status(404).build();
+        }
+    }
+
 }

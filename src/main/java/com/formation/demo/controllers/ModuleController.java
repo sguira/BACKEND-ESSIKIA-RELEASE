@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.formation.demo.entities.Fichiers;
 import com.formation.demo.entities.Matiere;
 import com.formation.demo.entities.Modules;
 import com.formation.demo.entities.Seance;
@@ -97,6 +98,14 @@ public class ModuleController {
         System.out.println("Module ID: " + moduleId);
         moduleService.makeFree(moduleId);
         return ResponseEntity.ok().body("Module marqué comme gratuit avec succès");
+    }
+
+    @PostMapping("/update-miniature/{moduleId}")
+    public ResponseEntity<Object> updateMiniature(@PathVariable String moduleId, @RequestBody Fichiers fichier) {
+        System.out.println("Module ID: " + moduleId);
+        System.out.println("Nouvelle URL de la miniature: " + fichier.getUrl());
+        moduleService.updateMiniature(moduleId, fichier);
+        return ResponseEntity.ok().body("Miniature du module mise à jour avec succès");
     }
 
 }
