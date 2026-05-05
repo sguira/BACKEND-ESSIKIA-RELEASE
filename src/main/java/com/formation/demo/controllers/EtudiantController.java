@@ -3,6 +3,7 @@ package com.formation.demo.controllers;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -109,6 +110,26 @@ public class EtudiantController {
             etudiantService.completeSeance(completeSeanceModel.getSeanceId(),
                     completeSeanceModel.getUserId(),
                     completeSeanceModel.getModuleId());
+            return ResponseEntity.ok().build();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PostMapping("/uncompleted/seance")
+    ResponseEntity<?> removeSeanceCompleted(
+            @RequestBody CompleteSeanceModel completeSeanceModel) {
+        String userId = completeSeanceModel.getUserId();
+        String seanceId = completeSeanceModel.getSeanceId();
+        if (completeSeanceModel.getModuleId() == null || completeSeanceModel.getSeanceId() == null
+                || completeSeanceModel.getUserId() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        try {
+            etudiantService.removeSeanceCompleted(completeSeanceModel.getSeanceId(),
+                    completeSeanceModel.getUserId());
             return ResponseEntity.ok().build();
 
         } catch (Exception e) {

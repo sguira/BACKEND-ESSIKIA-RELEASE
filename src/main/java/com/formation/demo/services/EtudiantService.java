@@ -133,6 +133,30 @@ public class EtudiantService {
 
     }
 
+    // Supprimer une séance terminée
+    public void removeSeanceCompleted(String seanceId, String userId) {
+        try {
+            Utilisateur e = utilisateurRepo.findById(userId).get();
+            Seance seance = seanceService.getSeanceById(seanceId);
+            System.out.println("user " + e.getId() + " seance " + seance.getId());
+            if (e == null || seance == null) {
+                System.out.println("user or seance not found");
+                throw new Exception("user or seance not found");
+            }
+            for (SuiviCours s : suiviCourRepository.findAll()) {
+                System.out.println("suivi " + s.getUtilisateur().getId() + " " + s.getCurrentSeance().getId());
+                if (s.getUtilisateur().getId().equals(userId) && s.getCurrentSeance().getId().equals(seanceId)) {
+                    suiviCourRepository.deleteById(s.getId());
+                    System.out.println("deleted" + s.getId());
+                    break;
+                }
+            }
+            System.out.println("deleted" + seanceId);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     // Retourner les séances terminées par un étudiant pour un module donné
     public List<Seance> getCompletedSeances(String moduleId, String username) {
         try {

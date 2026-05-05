@@ -10,13 +10,21 @@ import com.formation.demo.entities.Formateur;
 import com.formation.demo.entities.Groupe;
 import com.formation.demo.entities.Message;
 import com.formation.demo.entities.Planification;
+import com.formation.demo.entities.Promotion;
 import com.formation.demo.entities.Utilisateur;
 import com.formation.demo.enumeration.PlanificationStatus;
+import com.formation.demo.email.BodyEmail;
+import com.formation.demo.email.EmailServiceImp;
+import com.formation.demo.entities.Modules;
+import com.formation.demo.entities.Seance;
 import com.formation.demo.repository.EtudiantRepo;
 import com.formation.demo.repository.FormateurRepo;
 import com.formation.demo.repository.MessageRepository;
+import com.formation.demo.repository.ModulesRepository;
 import com.formation.demo.repository.PlanificationRepo;
 import com.formation.demo.repository.UtilisateurRepo;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import lombok.RequiredArgsConstructor;
 
@@ -31,6 +39,10 @@ public class AdminService {
     private final EtudiantRepo etudiantRepo;
     private final FormateurRepo formateurRepo;
     private final UtilisateurRepo utilisateurRepo;
+    private final EmailServiceImp emailService;
+    private final ModulesRepository modulesRepository;
+    private final PromotionService promotionService;
+    private final SeanceService seanceService;
 
     public Planification validationPlanification(ValidationPlanification validationPlanification) {
         Planification planification = planificationService
@@ -53,6 +65,38 @@ public class AdminService {
             messageRepository.save(message);
             System.out.println(
                     "Message envoyé au groupe " + groupe.getName() + " pour la planification " + planification.getId());
+
+            // Envoi mail au formateur
+            try {
+                Formateur formateur = planification.getFormateur();
+                Modules module = modulesRepository.findById(planification.getModuleId()).orElse(null);
+                Promotion promotion = promotionService.getById(planification.getPromotionId());
+                Seance seance = seanceService.getById(planification.getSeanceId());
+
+                if (formateur != null && module != null && promotion != null && seance != null) {
+                    String formattedDate = planification.getDateDebut();
+                    try {
+                        DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+                        LocalDateTime dt = LocalDateTime.parse(planification.getDateDebut(), inputFormatter);
+                        formattedDate = dt.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+                    } catch (Exception e) {
+                        System.out.println("Erreur formatage date dans AdminService: " + e.getMessage());
+                    }
+
+                    BodyEmail bodyEmail = new BodyEmail();
+                    bodyEmail.setRecipient(formateur.getEmail());
+                    bodyEmail.setBody("Votre planification a été acceptée");
+
+                    String html = planificationService.creerHtmlBodyValidation(formateur, seance.getTitle(),
+                            formattedDate);
+
+                    emailService.sendHtlmlMail(bodyEmail, html);
+                }
+            } catch (Exception e) {
+                System.out.println("Erreur lors de l'envoi du mail au formateur: " + e.getMessage());
+                e.printStackTrace();
+            }
+
             return planificationRepo.save(planification);
         } else {
             throw new RuntimeException(

@@ -26,4 +26,8 @@ public class SeanceService {
         return seanceRepository.findByModuleId(moduleId);
     }
 
+    public Seance getById(String id) {
+        return seanceRepository.findById(id).get();
+    }
+
 }

@@ -65,7 +65,8 @@ public class AuthService {
             email.setRecipient(utilisateur.getEmail());
             Etudiant e = createEtudiant(utilisateur);
             // utilisateurRepo.save(utilisateur);
-            e.setCodeConfirm(generateCode());
+            String code = generateCode();
+            e.setCodeConfirm(code);
             email.setBody("Création de compte");
             String res = emailService.sendHtlmlMail(email, creerHtmlBody(u, "Monsieur/Madame" + utilisateur.getNom() +
                     "Veuillez confirmer la création de votre compte sur L'application Essikia, <br>" +
@@ -73,11 +74,11 @@ public class AuthService {
 
             ));
             System.out.println("Mon Mail :" + res);
+            utilisateur.setCodeConfirm(code);
             if (res.equals("Mail Sent Successfully...") || true) {
                 utilisateurRepo.save(utilisateur);
                 etudiantRepo.save(e);
                 return ResponseEntity.status(HttpStatus.CREATED).build();
-
             }
 
         }
@@ -359,6 +360,7 @@ public class AuthService {
                         ConfirmCompteResponse response = new ConfirmCompteResponse();
                         response.setRole(utilisateur.getRole());
                         response.setEmail(utilisateur.getEmail());
+                        response.setUtilisateur(utilisateur);
                         System.out.println("Compte confirmé pour l'étudiant avec email: " + email);
                         return ResponseEntity.ok(response);
                     } else {
@@ -476,7 +478,8 @@ public class AuthService {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Utilisateur non trouvé");
             }
             String code = generateCode();
-            u.setCodeConfirm(code);
+            // u.setCodeConfirm(code);
+            u.setResetCode(code);
             utilisateurRepo.save(u);
 
             BodyEmail emailBody = new BodyEmail();
@@ -508,7 +511,9 @@ public class AuthService {
                 return;
             }
             String code = generateCode();
-            u.setCodeConfirm(code);
+
+            u.setResetCode(code);
+
             utilisateurRepo.save(u);
             System.out.println("Role de l'utilisateur: " + u.getRole());
             System.out.println("Etudiant trouvé pour l'email: " + email);

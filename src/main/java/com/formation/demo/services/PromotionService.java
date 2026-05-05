@@ -206,4 +206,8 @@ public class PromotionService {
         return groupe;
     }
 
+    public Promotion getById(String id) {
+        return promotionRepository.findById(id).get();
+    }
+
 }

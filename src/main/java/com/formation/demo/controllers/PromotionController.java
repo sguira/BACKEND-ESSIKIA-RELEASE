@@ -41,7 +41,7 @@ public class PromotionController {
         return promotionService.updatePromotion(promotion);
     }
 
-    @DeleteMapping("")
+    @DeleteMapping("{id}")
     public ResponseEntity<Object> deletePromotion(@PathVariable String id) {
         return promotionService.deletePromotion(id);
     }
