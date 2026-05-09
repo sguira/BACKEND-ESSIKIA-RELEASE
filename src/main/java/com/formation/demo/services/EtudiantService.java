@@ -206,6 +206,19 @@ public class EtudiantService {
         }
     }
 
+    // ne plus suivre une promotion et supprimer de mes promotions
+    public ResponseEntity<Object> unfollowPromotion(String promoId, String userId) {
+        try {
+            Promotion p = promotionRepository.findById(promoId).get();
+            Utilisateur e = utilisateurRepo.findById(userId).get();
+            e.removePromotion(p);
+            utilisateurRepo.save(e);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
     // Mes promotions
     public List<UserFollowPromotionItem> getMyPromotions(String userId) {
         Optional<Utilisateur> userOpt = utilisateurRepo.findById(userId);

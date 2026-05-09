@@ -192,13 +192,15 @@ public class EtudiantController {
         return etudiantService.followPromotion(promotionId, userId);
     }
 
-    // ne plus sivre une promotion
+    // unflow promotion
     @PostMapping("/unfollow/promotion/{userId}/{promotionId}")
-    ResponseEntity unfollowPromotion(@PathVariable("promotionId") String promotionId,
+    ResponseEntity<?> unfollowPromotion(@PathVariable("promotionId") String promotionId,
             @PathVariable("userId") String userId) {
-
+        System.out.println(promotionId + " " + userId);
         return etudiantService.leavePromotion(promotionId, userId);
     }
+
+ 
 
     // mes promotions
     @GetMapping("/promotions/{userId}")
