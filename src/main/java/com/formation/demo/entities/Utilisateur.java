@@ -86,4 +86,8 @@ public class Utilisateur {
         this.promotions.remove(promotion);
     }
 
+    public boolean isFollowingPromotion(String promotionId) {
+        return promotions.stream().anyMatch(p -> p.getId().equals(promotionId));
+    }
+
 }

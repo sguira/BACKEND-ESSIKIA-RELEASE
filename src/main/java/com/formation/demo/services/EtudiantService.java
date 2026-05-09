@@ -194,8 +194,11 @@ public class EtudiantService {
         try {
             Promotion p = promotionRepository.findById(promoId).get();
             Utilisateur e = utilisateurRepo.findById(userId).get();
-            e.ajouterPromotion(p);
-            utilisateurRepo.save(e);
+            if(!e.isFollowingPromotion(p.getId())) {
+                e.ajouterPromotion(p);
+                utilisateurRepo.save(e);
+
+            }
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             e.printStackTrace();
@@ -208,11 +211,11 @@ public class EtudiantService {
         Optional<Utilisateur> userOpt = utilisateurRepo.findById(userId);
         Utilisateur e = userOpt.orElseGet(() -> utilisateurRepo.findByEmail(userId).orElse(null));
         if (e == null) {
-            return new ArrayList<>();
+            throw new RuntimeException("User not found with id or email: " + userId);
         }
         List<Promotion> promotions = e.getPromotions();
         List<UserFollowPromotionItem> items = new ArrayList<>();
-        if (promotions == null || promotions.isEmpty()) {
+        if (promotions == null || promotions.isEmpty()  ) {
             return items;
         }
 
