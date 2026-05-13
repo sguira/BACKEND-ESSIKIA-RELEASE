@@ -24,7 +24,7 @@ public class R2Config {
         @Value("${r2.endpoint}")
         private String endpoint;
 
-        // ✅ Client S3 (upload direct si besoin)
+        // Client S3 (upload direct si besoin)
         @Bean
         public S3Client s3Client() {
                 return S3Client.builder()
