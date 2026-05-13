@@ -1,0 +1,19 @@
+services:
+  mongo:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: F8jtnzkF6Xvt
+      MONGO_INITDB_DATABASE: formation
+      MONGO_URI: mongodb://root:F8jtnzkF6Xvt@127.0.0.1:27017/formation
+      DATABASE_TYPE: mongodb
+      DATABASE_HOST: mongo
+      DATABASE_PORT: 27017
+      DATABASE_URL: mongodb://root:F8jtnzkF6Xvt@127.0.0.1:27017/formation?authSource=admin
+      
+    ports: 
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+volumes:
+  mongo_data:
