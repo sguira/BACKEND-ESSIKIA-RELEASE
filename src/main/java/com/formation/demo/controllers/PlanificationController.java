@@ -58,4 +58,18 @@ public class PlanificationController {
         }
     }
 
+    // mise à jour d'une planification par son ID
+    @PostMapping("/update/{planificationId}")
+    public ResponseEntity<Object> updatePlanificationById(@PathVariable String planificationId,
+            @RequestBody Planification planification) {
+        try {
+            Planification updatedPlanification = planificationService.updatePlanificationById(planificationId,
+                    planification);
+            return ResponseEntity.ok().body(updatedPlanification);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
 }

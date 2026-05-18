@@ -189,4 +189,21 @@ public class SeanceController {
         }
     }
 
+    @PostMapping("/description/{id}")
+    public ResponseEntity<?> updateSeanceDescription(@PathVariable String id, @RequestBody Map<String, String> request) {
+        try {
+            String description = request.get("description");
+            Seance seance = seanceRepository.findById(id).orElse(null);
+            if (seance == null) {
+                return ResponseEntity.status(404).body("Aucune seance trouvée");
+            }
+            seance.setDescription(description);
+            seanceRepository.save(seance);
+            return ResponseEntity.ok().body(seance);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Erreur de mise à jour de la description de la séance");
+        }
+    }
+
 }

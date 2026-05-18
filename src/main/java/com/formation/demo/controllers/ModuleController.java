@@ -2,6 +2,7 @@ package com.formation.demo.controllers;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -106,6 +107,14 @@ public class ModuleController {
         System.out.println("Nouvelle URL de la miniature: " + fichier.getUrl());
         moduleService.updateMiniature(moduleId, fichier);
         return ResponseEntity.ok().body("Miniature du module mise à jour avec succès");
+    }
+
+    @PostMapping("/update-description/{moduleId}")
+    public ResponseEntity<Object> updateDescription(@PathVariable String moduleId, @RequestBody Map<String,String> description) {
+        System.out.println("Module ID: " + moduleId);
+        System.out.println("Nouvelle description: " + description);
+        moduleService.updateDescription(moduleId, description.get("description") );
+        return ResponseEntity.ok().body("Description du module mise à jour avec succès");
     }
 
 }

@@ -44,7 +44,7 @@ public class Utilisateur {
     private String recupPassword;
     private String role;
     private List<Fichiers> avatars = new ArrayList<>();
-    @DBRef
+    // IDs stockés directement (évite les N+1 queries @DBRef)
     private List<Promotion> promotions = new ArrayList<>();
     private String type;
     private String objectif;

@@ -251,4 +251,25 @@ public class ModuleService {
             e.printStackTrace();
         }
     }
+
+    // 
+    public ResponseEntity<Object> updateDescription(String moduleId, String description) {
+        try {
+            Modules module = modulesRepository.findById(moduleId).orElse(null);
+            if (module == null) {
+                return ResponseEntity.status(404).body("Module non trouvé");
+            }
+            module.setDescription(description);
+            modulesRepository.save(module);
+            return ResponseEntity.ok(module);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(400).body("Une erreur est survenue");
+        }
+    }
+
+
+
+
+
 }

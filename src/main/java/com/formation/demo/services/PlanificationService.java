@@ -283,4 +283,18 @@ public class PlanificationService {
         return planificationRepo.findById(id).orElse(null);
     }
 
+    public Planification updatePlanificationById(String planificationId, Planification updatedPlanification) {
+        Planification existingPlanification = planificationRepo.findById(planificationId)
+                .orElseThrow(() -> new RuntimeException("Planification not found with id: " + planificationId));
+
+        existingPlanification.setDateDebut(updatedPlanification.getDateDebut());
+        existingPlanification.setDateFin(updatedPlanification.getDateFin());
+        existingPlanification.setFormateur(updatedPlanification.getFormateur());
+        existingPlanification.setPromotionId(updatedPlanification.getPromotionId());
+        existingPlanification.setModuleId(updatedPlanification.getModuleId());
+        existingPlanification.setSeanceId(updatedPlanification.getSeanceId());
+
+        return planificationRepo.save(existingPlanification);
+    }
+
 }
