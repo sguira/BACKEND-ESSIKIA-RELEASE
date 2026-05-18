@@ -164,8 +164,24 @@ public class AdminService {
     }
 
     public void suppressionFormateur(String email) {
-        formateurRepo.deleteByEmail(email);
-        utilisateurRepo.deleteByEmail(email);
+        try {
+            System.out.println("Tentative de suppression du formateur avec email: " + email);
+            Formateur formateur = formateurRepo.findByEmail(email);
+            if (formateur == null) {
+                System.out.println("Formateur non trouvé avec l'email test : " + email);
+                throw new RuntimeException("Formateur non trouvé avec l'email : " + email);
+            }
+            // Supprimer le formateur
+            formateurRepo.deleteByEmail(email);
+            Utilisateur utilisateur = utilisateurRepo.findByEmail(email).orElse(null);
+            if (utilisateur != null) {
+                utilisateurRepo.deleteByEmail(email);
+            }
+            System.out.println("Formateur avec email " + email + " supprimé avec succès.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Erreur lors de la suppression du formateur : " + e.getMessage());
+        }
     }
 
     public Formateur updFormateur(Formateur formateur) {

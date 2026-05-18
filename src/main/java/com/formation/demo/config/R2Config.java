@@ -15,36 +15,35 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 @Configuration
 public class R2Config {
 
-    @Value("${r2.access-key}")
-    private String accessKey;
+        @Value("${r2.access-key}")
+        private String accessKey;
 
-    @Value("${r2.secret-key}")
-    private String secretKey;
+        @Value("${r2.secret-key}")
+        private String secretKey;
 
-    @Value("${r2.endpoint}")
-    private String endpoint;
+        @Value("${r2.endpoint}")
+        private String endpoint;
 
-    // ✅ Client S3 (upload direct si besoin)
-    @Bean
-    public S3Client s3Client() {
-        return S3Client.builder()
-                .credentialsProvider(
-                        StaticCredentialsProvider.create(
-                                AwsBasicCredentials.create(accessKey, secretKey)))
-                .endpointOverride(URI.create(endpoint))
-                .region(Region.US_EAST_1)
-                .build();
-    }
+        // Client S3 (upload direct si besoin)
+        @Bean
+        public S3Client s3Client() {
+                return S3Client.builder()
+                                .credentialsProvider(
+                                                StaticCredentialsProvider.create(
+                                                                AwsBasicCredentials.create(accessKey, secretKey)))
+                                .endpointOverride(URI.create(endpoint))
+                                .region(Region.US_EAST_1)
+                                .build();
+        }
 
-    // 🔥 AJOUT IMPORTANT (manquant)
-    @Bean
-    public S3Presigner s3Presigner() {
-        return S3Presigner.builder()
-                .credentialsProvider(
-                        StaticCredentialsProvider.create(
-                                AwsBasicCredentials.create(accessKey, secretKey)))
-                .endpointOverride(URI.create(endpoint))
-                .region(Region.US_EAST_1)
-                .build();
-    }
+        @Bean
+        public S3Presigner s3Presigner() {
+                return S3Presigner.builder()
+                                .credentialsProvider(
+                                                StaticCredentialsProvider.create(
+                                                                AwsBasicCredentials.create(accessKey, secretKey)))
+                                .endpointOverride(URI.create(endpoint))
+                                .region(Region.US_EAST_1)
+                                .build();
+        }
 }

@@ -98,10 +98,6 @@ public class EtudiantController {
         if (quizzService.hasUserSubmittedQuizz(seanceId, userId) == false) {
             return ResponseEntity.badRequest().body("Vous devez d'abord soumettre le quizz associé à cette séance.");
         }
-
-        System.out.println("here");
-        System.out.println(completeSeanceModel.getModuleId() + " " + completeSeanceModel.getSeanceId() + " "
-                + completeSeanceModel.getUserId());
         if (completeSeanceModel.getModuleId() == null || completeSeanceModel.getSeanceId() == null
                 || completeSeanceModel.getUserId() == null) {
             return ResponseEntity.badRequest().build();
@@ -192,15 +188,13 @@ public class EtudiantController {
         return etudiantService.followPromotion(promotionId, userId);
     }
 
-    // unflow promotion
+    // ne plus sivre une promotion
     @PostMapping("/unfollow/promotion/{userId}/{promotionId}")
-    ResponseEntity<?> unfollowPromotion(@PathVariable("promotionId") String promotionId,
+    ResponseEntity unfollowPromotion(@PathVariable("promotionId") String promotionId,
             @PathVariable("userId") String userId) {
-        System.out.println(promotionId + " " + userId);
+
         return etudiantService.leavePromotion(promotionId, userId);
     }
-
- 
 
     // mes promotions
     @GetMapping("/promotions/{userId}")

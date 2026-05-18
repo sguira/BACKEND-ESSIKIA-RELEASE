@@ -129,7 +129,14 @@ public class EtudiantService {
         suivi.setModule(m);
         suivi.setCurrentSeanceIndex(m.getSeances().indexOf(seance));
 
-        suiviCourRepository.save(suivi);
+        if (suiviCourRepository.existsByUtilisateurIdAndModuleIdAndCurrentSeanceId(userId, moduleId, seanceId)) {
+            SuiviCours existingSuivi = suiviCourRepository.findByUtilisateurIdAndModuleIdAndCurrentSeanceId(userId,
+                    moduleId, seanceId);
+            existingSuivi.setCompleted(true);
+            suiviCourRepository.save(existingSuivi);
+        } else {
+            suiviCourRepository.save(suivi);
+        }
 
     }
 
@@ -194,27 +201,14 @@ public class EtudiantService {
         try {
             Promotion p = promotionRepository.findById(promoId).get();
             Utilisateur e = utilisateurRepo.findById(userId).get();
-            if(!e.isFollowingPromotion(p.getId())) {
+            e.ajouterPromotion(p);
+            if (!e.isFollowingPromotion(promoId)) {
                 e.ajouterPromotion(p);
                 utilisateurRepo.save(e);
-
             }
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
-    // ne plus suivre une promotion et supprimer de mes promotions
-    public ResponseEntity<Object> unfollowPromotion(String promoId, String userId) {
-        try {
-            Promotion p = promotionRepository.findById(promoId).get();
-            Utilisateur e = utilisateurRepo.findById(userId).get();
-            e.removePromotion(p);
-            utilisateurRepo.save(e);
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
     }
@@ -224,17 +218,18 @@ public class EtudiantService {
         Optional<Utilisateur> userOpt = utilisateurRepo.findById(userId);
         Utilisateur e = userOpt.orElseGet(() -> utilisateurRepo.findByEmail(userId).orElse(null));
         if (e == null) {
-            throw new RuntimeException("User not found with id or email: " + userId);
+            return new ArrayList<>();
         }
         List<Promotion> promotions = e.getPromotions();
         List<UserFollowPromotionItem> items = new ArrayList<>();
-        if (promotions == null || promotions.isEmpty()  ) {
+        if (promotions == null || promotions.isEmpty()) {
             return items;
         }
 
         List<SuiviCours> completedSuivis = suiviCourRepository.findByUtilisateurIdAndIsCompletedTrue(e.getId());
         Map<String, Integer> completedByModule = new HashMap<>();
         for (SuiviCours suivi : completedSuivis) {
+            System.out.println("suivi module " + (suivi.getModule() != null ? suivi.getModule().getId() : "null"));
             if (suivi.getModule() != null) {
                 completedByModule.merge(suivi.getModule().getId(), 1, Integer::sum);
             }
@@ -256,6 +251,7 @@ public class EtudiantService {
                     .build();
             items.add(item);
         }
+        System.out.println("items " + items.size());
         return items;
     }
 

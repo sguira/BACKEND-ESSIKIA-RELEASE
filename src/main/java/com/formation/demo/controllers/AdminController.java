@@ -1,6 +1,7 @@
 package com.formation.demo.controllers;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -86,9 +87,9 @@ public class AdminController {
     }
 
     @DeleteMapping("/supprimer-formateur")
-    public ResponseEntity<Object> supprimerFormateur(@RequestBody String email) {
+    public ResponseEntity<Object> supprimerFormateur(@RequestBody Map<String, String> email) {
         try {
-            adminService.suppressionFormateur(email);
+            adminService.suppressionFormateur(email.get("email"));
             return ResponseEntity.ok("Formateur supprimé avec succès");
         } catch (Exception e) {
             e.printStackTrace();
