@@ -68,9 +68,9 @@ public class AuthService {
             // utilisateurRepo.save(utilisateur);
             String code = generateCode();
             e.setCodeConfirm(code);
-            email.setBody("Création de compte");
+            email.setBody("Ton code de confirmation ESSIKIA");
             String res = emailService.sendHtlmlMail(email,
-                    EmailTemplates.confirmationCompte(utilisateur.getNom(), e.getCodeConfirm()));
+                    EmailTemplates.confirmationCompte(utilisateur.getPrenom() != null ? utilisateur.getPrenom() : utilisateur.getNom(), e.getCodeConfirm()));
             System.out.println("Mon Mail :" + res);
             utilisateur.setCodeConfirm(code);
             if (res.equals("Mail Sent Successfully...") || true) {
@@ -148,10 +148,10 @@ public class AuthService {
             utilisateurRepo.save(formateur);
             BodyEmail email = new BodyEmail();
             email.setRecipient(formateur.getEmail());
-            email.setBody("Création de compte");
+            email.setBody("Création de votre compte formateur ESSIKIA");
 
             String res = emailService.sendHtlmlMail(email,
-                    EmailTemplates.bienvenuFormateur(formateur.getNom(), password, formateur.getCodeConfirm()));
+                    EmailTemplates.bienvenuFormateur(formateur.getPrenom() != null ? formateur.getPrenom() : formateur.getNom(), password, formateur.getCodeConfirm()));
 
             if (!res.equals("Mail Sent Successfully...")) {
                 throw new Exception("Erreur lors de l'envoi de l'email");
@@ -301,6 +301,18 @@ public class AuthService {
                         etudiantRepo.save(etudiant);
                         utilisateurRepo.save(utilisateur);
                         etudiantRepo.save(etudiant);
+
+                        try {
+                            BodyEmail welcomeEmail = new BodyEmail();
+                            welcomeEmail.setRecipient(email);
+                            welcomeEmail.setBody("Bienvenue sur ESSIKIA — Ton compte est activé");
+                            String prenom = utilisateur.getPrenom() != null ? utilisateur.getPrenom() : utilisateur.getNom();
+                            emailService.sendHtlmlMail(welcomeEmail,
+                                    EmailTemplates.bienvenueEtudiant(prenom, "https://essikia.fr"));
+                        } catch (Exception ex) {
+                            System.out.println("Erreur envoi email bienvenue étudiant: " + ex.getMessage());
+                        }
+
                         ConfirmCompteResponse response = new ConfirmCompteResponse();
                         response.setRole(utilisateur.getRole());
                         response.setEmail(utilisateur.getEmail());
@@ -428,9 +440,10 @@ public class AuthService {
 
             BodyEmail emailBody = new BodyEmail();
             emailBody.setRecipient(email);
-            emailBody.setBody("Réinitialisation de mot de passe");
+            emailBody.setBody("Demande de modification de mot de passe — ESSIKIA");
+            String prenom = u.getPrenom() != null ? u.getPrenom() : u.getNom();
             String res = emailService.sendHtlmlMail(emailBody,
-                    EmailTemplates.resetMotDePasse(u.getNom(), code));
+                    EmailTemplates.resetMotDePasse(prenom, code));
 
             if (!res.equals("Mail Sent Successfully...")) {
                 throw new Exception("Erreur lors de l'envoi de l'email");
@@ -461,9 +474,10 @@ public class AuthService {
             BodyEmail emailBody = new BodyEmail();
             emailBody.setRecipient(email);
 
-            emailBody.setBody("Réinitialisation de mot de passe");
+            emailBody.setBody("Demande de modification de mot de passe — ESSIKIA");
+            String prenomUser = u.getPrenom() != null ? u.getPrenom() : u.getNom();
             String res = emailService.sendHtlmlMail(emailBody,
-                    EmailTemplates.resetMotDePasse(u.getNom(), code));
+                    EmailTemplates.resetMotDePasse(prenomUser, code));
 
             if (!res.equals("Mail Sent Successfully...")) {
                 throw new Exception("Erreur lors de l'envoi de l'email");

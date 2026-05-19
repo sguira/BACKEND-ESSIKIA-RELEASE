@@ -55,8 +55,7 @@ public class AdminController {
     public ResponseEntity<Object> annulationPlanification(
             @RequestBody ValidationPlanification validationPlanification) {
         try {
-            Planification planification = adminService
-                    .anuulerPlanification(validationPlanification.getPlanificationId());
+            Planification planification = adminService.anuulerPlanification(validationPlanification);
             return ResponseEntity.ok(planification);
         } catch (Exception e) {
             e.printStackTrace();

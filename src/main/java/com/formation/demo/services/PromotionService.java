@@ -1,5 +1,6 @@
 package com.formation.demo.services;
 
+import com.formation.demo.repository.EtudiantRepo;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.formation.demo.dto.AssignMatProf;
 import com.formation.demo.dto.PromotionDTO;
+import com.formation.demo.entities.Etudiant;
 import com.formation.demo.entities.Formateur;
 import com.formation.demo.entities.Groupe;
 import com.formation.demo.entities.Matiere;
@@ -31,6 +33,8 @@ import lombok.RequiredArgsConstructor;
 @Component
 @RequiredArgsConstructor
 public class PromotionService {
+
+    private final EtudiantRepo etudiantRepo;
 
     private final GroupeRepository groupeRepository;
 
@@ -208,6 +212,26 @@ public class PromotionService {
 
     public Promotion getById(String id) {
         return promotionRepository.findById(id).get();
+    }
+
+    public List<Etudiant> fetchAllStudentForPromotion(String promotionId) {
+
+        try {
+            List<Etudiant> etudiants = new ArrayList<>();
+            for (var user : etudiantRepo.findAll()) {
+                if (user.getPromotions().size() > 0) {
+                    for (var promo : user.getPromotions()) {
+                        if (promo.getId().equals(promotionId)) {
+                            etudiants.add(user);
+
+                        }
+                    }
+                }
+            }
+            return etudiants;
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
     }
 
 }

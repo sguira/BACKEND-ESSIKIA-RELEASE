@@ -67,7 +67,7 @@ public class AdminService {
             System.out.println(
                     "Message envoyé au groupe " + groupe.getName() + " pour la planification " + planification.getId());
 
-            // Envoi mail au formateur
+            // Email 7 — Séance confirmée (formateur) + Email 3 — Séance planifiée (étudiants)
             try {
                 Formateur formateur = planification.getFormateur();
                 Modules module = modulesRepository.findById(planification.getModuleId()).orElse(null);
@@ -84,16 +84,43 @@ public class AdminService {
                         System.out.println("Erreur formatage date dans AdminService: " + e.getMessage());
                     }
 
+                    String format = (planification.getLink() != null && !planification.getLink().isEmpty())
+                            ? "Visioconférence" : "Présentiel";
+                    int nbApprenants = (promotion.getEtudiants() != null) ? promotion.getEtudiants().size() : 0;
+                    String heureDebut = planification.getDateDebut() != null ? planification.getDateDebut() : "";
+                    String heureFin = planification.getDateFin() != null ? planification.getDateFin() : "";
+
+                    // Email 7 — Confirmation au formateur
                     BodyEmail bodyEmail = new BodyEmail();
                     bodyEmail.setRecipient(formateur.getEmail());
-                    bodyEmail.setBody("Votre planification a été acceptée");
-
-                    String nom = formateur.getPrenom() + " " + formateur.getNom();
+                    bodyEmail.setBody("Votre séance a été confirmée — ESSIKIA");
+                    String prenomFormateur = formateur.getPrenom() != null ? formateur.getPrenom() : formateur.getNom();
                     emailService.sendHtlmlMail(bodyEmail,
-                            EmailTemplates.planificationValidee(nom, seance.getTitle(), formattedDate));
+                            EmailTemplates.planificationValidee(prenomFormateur, module.getNom(),
+                                    seance.getTitle(), formattedDate, heureDebut, heureFin,
+                                    format, nbApprenants, "https://essikia.fr/formateur"));
+
+                    // Email 3 — Notification aux étudiants de la promotion
+                    String nomFormateur = formateur.getPrenom() + " " + formateur.getNom();
+                    final String finalFormattedDate = formattedDate;
+                    for (Etudiant etudiant : promotion.getEtudiants()) {
+                        try {
+                            BodyEmail etudiantEmail = new BodyEmail();
+                            etudiantEmail.setRecipient(etudiant.getEmail());
+                            etudiantEmail.setBody("Une nouvelle séance a été planifiée pour toi — ESSIKIA");
+                            String prenomEtudiant = etudiant.getPrenom() != null ? etudiant.getPrenom() : etudiant.getNom();
+                            emailService.sendHtlmlMail(etudiantEmail,
+                                    EmailTemplates.seancePlanifieeEtudiant(prenomEtudiant, nomFormateur,
+                                            module.getNom(), seance.getTitle(), finalFormattedDate,
+                                            heureDebut, heureFin, format,
+                                            planification.getLink() != null ? planification.getLink() : ""));
+                        } catch (Exception ex) {
+                            System.out.println("Erreur envoi email étudiant " + etudiant.getEmail() + ": " + ex.getMessage());
+                        }
+                    }
                 }
             } catch (Exception e) {
-                System.out.println("Erreur lors de l'envoi du mail au formateur: " + e.getMessage());
+                System.out.println("Erreur lors de l'envoi des emails de confirmation: " + e.getMessage());
                 e.printStackTrace();
             }
 
@@ -117,11 +144,16 @@ public class AdminService {
         }
     }
 
-    public Planification anuulerPlanification(String planificationId) {
+    // Email 8 — Séance refusée : envoie un email au formateur avec le motif
+    public Planification anuulerPlanification(ValidationPlanification validationPlanification) {
+        String planificationId = validationPlanification.getPlanificationId();
+        String motif = validationPlanification.getMotif() != null ? validationPlanification.getMotif() : "Non précisé";
+
         Planification planification = planificationRepo.findById(planificationId)
                 .orElseThrow(() -> new RuntimeException("Planification not found with id: " + planificationId));
         planification.setStatus(PlanificationStatus.REFUSER);
         planificationRepo.save(planification);
+
         try {
             Groupe groupe = groupeService.promotionGroupe(planification.getPromotionId());
             Message message = new Message();
@@ -137,9 +169,32 @@ public class AdminService {
                     + planification.getId());
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            planificationRepo.save(planification);
         }
+
+        // Email 8 — Refus notifié au formateur
+        try {
+            Formateur formateur = planification.getFormateur();
+            if (formateur != null) {
+                Modules module = modulesRepository.findById(planification.getModuleId()).orElse(null);
+                Seance seance = seanceService.getById(planification.getSeanceId());
+
+                BodyEmail refusEmail = new BodyEmail();
+                refusEmail.setRecipient(formateur.getEmail());
+                refusEmail.setBody("Votre séance n'a pas pu être confirmée — ESSIKIA");
+                String prenomFormateur = formateur.getPrenom() != null ? formateur.getPrenom() : formateur.getNom();
+                emailService.sendHtlmlMail(refusEmail,
+                        EmailTemplates.planificationRefuseeFormateur(prenomFormateur,
+                                module != null ? module.getNom() : "",
+                                seance != null ? seance.getTitle() : "",
+                                planification.getDateDebut() != null ? planification.getDateDebut() : "",
+                                motif, "https://essikia.fr/formateur"));
+            }
+        } catch (Exception e) {
+            System.out.println("Erreur envoi email refus formateur: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        planificationRepo.save(planification);
         return planification;
     }
 
@@ -171,7 +226,6 @@ public class AdminService {
                 System.out.println("Formateur non trouvé avec l'email test : " + email);
                 throw new RuntimeException("Formateur non trouvé avec l'email : " + email);
             }
-            // Supprimer le formateur
             formateurRepo.deleteByEmail(email);
             Utilisateur utilisateur = utilisateurRepo.findByEmail(email).orElse(null);
             if (utilisateur != null) {
@@ -185,7 +239,6 @@ public class AdminService {
     }
 
     public Formateur updFormateur(Formateur formateur) {
-
         Formateur existingFormateur = formateurRepo.findByEmail(formateur.getEmail());
         Utilisateur existingUtilisateur = utilisateurRepo.findByEmail(formateur.getEmail()).orElse(null);
         if (existingFormateur == null || existingUtilisateur == null) {

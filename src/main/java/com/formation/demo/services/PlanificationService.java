@@ -63,31 +63,32 @@ public class PlanificationService {
         admins.add(u);
         System.out.println("Admins trouvés: " + admins.size());
         // Envoi d'un email de notification à tous les administrateurs
+        String formattedDate = planification.getDateDebut();
+        try {
+            DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+            LocalDateTime dt = LocalDateTime.parse(planification.getDateDebut(), inputFormatter);
+            formattedDate = dt.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+        } catch (Exception e) {
+            System.out.println("Erreur de formatage de date: " + e.getMessage());
+        }
+
+        String nomFormateur = formateur.getPrenom() + " " + formateur.getNom();
+        int nbApprenants = (promotion.getEtudiants() != null) ? promotion.getEtudiants().size() : 0;
+        String heureDebut = planification.getDateDebut() != null ? planification.getDateDebut() : "";
+        String heureFin = planification.getDateFin() != null ? planification.getDateFin() : "—";
+
         for (Utilisateur admin : admins) {
             BodyEmail bodyEmail = new BodyEmail();
-            bodyEmail.setBody("Nouvelle planification de séance à valider");
-            bodyEmail.setMessage(EmailTemplates.nouvellePlanification());
+            bodyEmail.setBody("Action requise — Un formateur a planifié une séance · ESSIKIA");
             bodyEmail.setRecipient(admin.getEmail());
 
-            String msg = "Une nouvelle planification de séance a été soumise par le formateur <strong>" +
-                    formateur.getPrenom() + " " + formateur.getNom() + "</strong>. " +
-                    "Merci de vous connecter à votre interface d'administration pour valider ou refuser cette séance.";
-
-            String formattedDate = planification.getDateDebut();
-            try {
-                // Format reçu : yyyy-MM-dd HH:mm
-                DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-                LocalDateTime dt = LocalDateTime.parse(planification.getDateDebut(), inputFormatter);
-                formattedDate = dt.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
-            } catch (Exception e) {
-                System.out.println("Erreur de formatage de date: " + e.getMessage());
-            }
-
-            String nomAdmin = admin.getPrenom() + " " + admin.getNom();
-            String nomFormateur = formateur.getPrenom() + " " + formateur.getNom();
+            String nomAdmin = (admin.getPrenom() != null ? admin.getPrenom() : "") + " " + (admin.getNom() != null ? admin.getNom() : "Administrateur");
             emailService.sendHtlmlMail(bodyEmail, EmailTemplates.planificationNotification(
-                    nomAdmin, msg, seance.getTitle(), module.getNom(),
-                    promotion.getName(), formattedDate, nomFormateur));
+                    nomAdmin.trim(), seance.getTitle(), module.getNom(),
+                    promotion.getName(), formattedDate, nomFormateur,
+                    heureDebut, heureFin, "À définir", nbApprenants,
+                    "https://essikia.fr/admin/planifications",
+                    "https://essikia.fr/admin/planifications"));
         }
 
         return planificationRepo.save(planification);

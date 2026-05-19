@@ -9,5 +9,6 @@ public class ValidationPlanification implements Serializable {
 
     private String planificationId;
     private String link;
+    private String motif;
 
 }
