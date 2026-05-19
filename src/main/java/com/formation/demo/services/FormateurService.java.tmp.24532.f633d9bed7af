@@ -111,7 +111,7 @@ public class FormateurService {
             bodyEmail.setBody(subject);
             bodyEmail.setMessage(message);
             bodyEmail.setRecipient(formateur.getEmail());
-            emailService.sendHtlmlMail(bodyEmail, EmailTemplates.gestionCompte(subject, message));
+            emailService.sendHtlmlMail(bodyEmail, generatedHtmlEmail(subject, message));
             System.out.println("Email sent successfully to " + formateur.getEmail());
         } catch (Exception e) {
             e.printStackTrace();
@@ -152,7 +152,7 @@ public class FormateurService {
 
             bodyEmail.setMessage(message);
             bodyEmail.setRecipient(formateur.getEmail());
-            emailService.sendHtlmlMail(bodyEmail, EmailTemplates.gestionCompte(subject, message));
+            emailService.sendHtlmlMail(bodyEmail, generatedHtmlEmail(subject, message));
             System.out.println("Email sent successfully to " + formateur.getEmail());
         } catch (Exception e) {
             e.printStackTrace();
@@ -164,6 +164,15 @@ public class FormateurService {
         formateurRepo.save(formateur);
         utilisateurRepo.save(utilisateur);
         System.out.println("Formateur " + formateur.getEmail() + " has been unblocked and saved to the database.");
+    }
+
+    String generatedHtmlEmail(String subject, String message) {
+        return "<html>" +
+                "<body>" +
+                "<h1>" + subject + "</h1>" +
+                "<p>" + message + "</p>" +
+                "</body>" +
+                "</html>";
     }
 
     // envoyé rapport d'une séance

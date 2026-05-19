@@ -189,7 +189,7 @@ public class SeanceController {
         }
     }
 
-    @PostMapping("/description/{id}")
+    @PostMapping("/update-description/{id}")
     public ResponseEntity<?> updateSeanceDescription(@PathVariable String id, @RequestBody Map<String, String> request) {
         try {
             String description = request.get("description");

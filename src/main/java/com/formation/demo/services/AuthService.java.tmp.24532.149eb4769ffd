@@ -18,7 +18,6 @@ import com.formation.demo.dto.ConfirmCompteResponse;
 import com.formation.demo.dto.Info;
 import com.formation.demo.email.BodyEmail;
 import com.formation.demo.email.EmailServiceImp;
-import com.formation.demo.email.EmailTemplates;
 import com.formation.demo.entities.Etudiant;
 import com.formation.demo.entities.Fichiers;
 import com.formation.demo.entities.Formateur;

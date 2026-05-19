@@ -74,4 +74,14 @@ public class VideoExplicativeService {
         return null;
     }
 
+    // generation de mail de notification pour la suppression d'une vidéo
+    // explicative
+    public String generateHtmlmessage(String videoId) {
+        return "<html>" +
+                "<body>" +
+                "<h1>Suppression de vidéo explicative</h1>" +
+                "<p>La vidéo explicative avec l'ID " + videoId + " a été supprimée.</p>" +
+                "</body>" +
+                "</html>";
+    }
 }
