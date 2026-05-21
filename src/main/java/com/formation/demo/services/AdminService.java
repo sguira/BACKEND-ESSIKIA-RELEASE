@@ -67,7 +67,8 @@ public class AdminService {
             System.out.println(
                     "Message envoyé au groupe " + groupe.getName() + " pour la planification " + planification.getId());
 
-            // Email 7 — Séance confirmée (formateur) + Email 3 — Séance planifiée (étudiants)
+            // Email 7 — Séance confirmée (formateur) + Email 3 — Séance planifiée
+            // (étudiants)
             try {
                 Formateur formateur = planification.getFormateur();
                 Modules module = modulesRepository.findById(planification.getModuleId()).orElse(null);
@@ -85,7 +86,8 @@ public class AdminService {
                     }
 
                     String format = (planification.getLink() != null && !planification.getLink().isEmpty())
-                            ? "Visioconférence" : "Présentiel";
+                            ? "Visioconférence"
+                            : "Présentiel";
                     int nbApprenants = (promotion.getEtudiants() != null) ? promotion.getEtudiants().size() : 0;
                     String heureDebut = planification.getDateDebut() != null ? planification.getDateDebut() : "";
                     String heureFin = planification.getDateFin() != null ? planification.getDateFin() : "";
@@ -108,14 +110,16 @@ public class AdminService {
                             BodyEmail etudiantEmail = new BodyEmail();
                             etudiantEmail.setRecipient(etudiant.getEmail());
                             etudiantEmail.setBody("Une nouvelle séance a été planifiée pour toi — ESSIKIA");
-                            String prenomEtudiant = etudiant.getPrenom() != null ? etudiant.getPrenom() : etudiant.getNom();
+                            String prenomEtudiant = etudiant.getPrenom() != null ? etudiant.getPrenom()
+                                    : etudiant.getNom();
                             emailService.sendHtlmlMail(etudiantEmail,
                                     EmailTemplates.seancePlanifieeEtudiant(prenomEtudiant, nomFormateur,
                                             module.getNom(), seance.getTitle(), finalFormattedDate,
                                             heureDebut, heureFin, format,
                                             planification.getLink() != null ? planification.getLink() : ""));
                         } catch (Exception ex) {
-                            System.out.println("Erreur envoi email étudiant " + etudiant.getEmail() + ": " + ex.getMessage());
+                            System.out.println(
+                                    "Erreur envoi email étudiant " + etudiant.getEmail() + ": " + ex.getMessage());
                         }
                     }
                 }
