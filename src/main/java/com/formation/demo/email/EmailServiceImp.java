@@ -1,12 +1,11 @@
 package com.formation.demo.email;
 
 import java.io.File;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
-
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -99,6 +98,26 @@ public class EmailServiceImp implements interfaceSendMail {
             return "Error while Sending Mail";
         }
 
+    }
+
+    // Envoie un seul email HTML à un destinataire principal avec plusieurs adresses en CC
+    public String sendHtmlMailWithCc(BodyEmail email, String htmlBody, List<String> cc) {
+        try {
+            MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+            helper.setFrom(sender);
+            helper.setTo(email.getRecipient());
+            helper.setSubject(email.getBody());
+            helper.setText(htmlBody, true);
+            if (cc != null && !cc.isEmpty()) {
+                helper.setCc(cc.toArray(new String[0]));
+            }
+            javaMailSender.send(mimeMessage);
+            return "Mail Sent Successfully...";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Error while Sending Mail";
+        }
     }
 
     // Method 2

@@ -26,6 +26,9 @@ public class Seance {
 
     private List<Fichiers> files = new ArrayList<Fichiers>();
     private List<Map<String, Object>> content;
+
+    private String htmlContent;
+
     @DBRef
     private Formateur formateur;
     @DBRef

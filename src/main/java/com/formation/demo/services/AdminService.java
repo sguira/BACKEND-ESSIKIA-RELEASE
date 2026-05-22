@@ -105,22 +105,24 @@ public class AdminService {
                     // Email 3 — Notification aux étudiants de la promotion
                     String nomFormateur = formateur.getPrenom() + " " + formateur.getNom();
                     final String finalFormattedDate = formattedDate;
-                    for (Etudiant etudiant : promotion.getEtudiants()) {
-                        try {
-                            BodyEmail etudiantEmail = new BodyEmail();
-                            etudiantEmail.setRecipient(etudiant.getEmail());
-                            etudiantEmail.setBody("Une nouvelle séance a été planifiée pour toi — ESSIKIA");
-                            String prenomEtudiant = etudiant.getPrenom() != null ? etudiant.getPrenom()
-                                    : etudiant.getNom();
-                            emailService.sendHtlmlMail(etudiantEmail,
-                                    EmailTemplates.seancePlanifieeEtudiant(prenomEtudiant, nomFormateur,
-                                            module.getNom(), seance.getTitle(), finalFormattedDate,
-                                            heureDebut, heureFin, format,
-                                            planification.getLink() != null ? planification.getLink() : ""));
-                        } catch (Exception ex) {
-                            System.out.println(
-                                    "Erreur envoi email étudiant " + etudiant.getEmail() + ": " + ex.getMessage());
-                        }
+                    List<Etudiant> etudiants = promotionService.fetchAllStudentForPromotion(promotion.getId());
+                    List<String> emailsEtudiants = etudiants.stream().map(Etudiant::getEmail).toList();
+                    try {
+                        BodyEmail etudiantEmail = new BodyEmail();
+                        // To do remplacer après
+                        etudiantEmail.setRecipient("support@essikia.com");
+                        String htmlEmailBody = EmailTemplates.seancePlanifieeEtudiant(prenomFormateur, nomFormateur,
+                                format, prenomFormateur,
+                                formattedDate, heureDebut, heureFin, nomFormateur, finalFormattedDate);
+                        etudiantEmail.setBody("Nouvelle séance planifiée : " + seance.getTitle());
+                        etudiantEmail.setMessage(htmlEmailBody);
+
+                        emailService.sendHtmlMailWithCc(bodyEmail, htmlEmailBody, emailsEtudiants);
+
+                    } catch (Exception ex) {
+                        System.out.println(
+                                "Erreur lors de l'envoi des emails de confirmation aux étudiants: " + ex.getMessage());
+                        ex.printStackTrace();
                     }
                 }
             } catch (Exception e) {
@@ -161,7 +163,7 @@ public class AdminService {
         try {
             Groupe groupe = groupeService.promotionGroupe(planification.getPromotionId());
             Message message = new Message();
-            message.setContent("⚠️ Annulation de séance\n\n"
+            message.setContent(" Annulation de séance\n\n"
                     + "La séance initialement prévue le " + planification.getDateDebut() + " a été annulée.\n\n"
                     + "Vous serez informé(e) de la nouvelle date de reprogrammation si applicable.\n\n"
                     + "Nous nous excusons pour la gêne occasionnée.");
@@ -195,6 +197,41 @@ public class AdminService {
             }
         } catch (Exception e) {
             System.out.println("Erreur envoi email refus formateur: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        // email 4 — Notification d'annulation aux étudiants de la promotion
+        try {
+            Promotion promotion = promotionService.getById(planification.getPromotionId());
+            Seance seance = seanceService.getById(planification.getSeanceId());
+            Modules module = modulesRepository.findById(planification.getModuleId()).orElse(null);
+            if (promotion != null) {
+                String formattedDate = planification.getDateDebut();
+                String nomSeance = seance != null ? seance.getTitle() : "";
+                String moduleNom = module != null ? module.getNom() : "";
+                try {
+                    DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+                    LocalDateTime dt = LocalDateTime.parse(planification.getDateDebut(), inputFormatter);
+                    formattedDate = dt.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+                } catch (Exception e) {
+                    System.out.println("Erreur formatage date dans AdminService: " + e.getMessage());
+                }
+
+                String nomFormateur = planification.getFormateur().getPrenom() + " "
+                        + planification.getFormateur().getNom();
+                List<Etudiant> etudiants = promotionService.fetchAllStudentForPromotion(promotion.getId());
+                List<String> emailsEtudiants = etudiants.stream().map(Etudiant::getEmail).toList();
+                BodyEmail etudiantEmail = new BodyEmail();
+                // To do remplacer après
+
+                etudiantEmail.setRecipient("support@essikia.com");
+                etudiantEmail.setBody("Séance annulée : " + nomSeance);
+                String htmlEmailBody = EmailTemplates.seanceAnnuleeEtudiant(moduleNom, nomSeance, formattedDate);
+                etudiantEmail.setMessage(htmlEmailBody);
+                emailService.sendHtmlMailWithCc(etudiantEmail, htmlEmailBody, emailsEtudiants);
+            }
+        } catch (Exception e) {
+            System.out.println("Erreur envoi email annulation étudiants: " + e.getMessage());
             e.printStackTrace();
         }
 

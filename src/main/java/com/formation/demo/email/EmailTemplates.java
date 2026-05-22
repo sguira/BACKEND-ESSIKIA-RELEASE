@@ -95,7 +95,11 @@ public class EmailTemplates {
                 "<li><strong>Date :</strong> " + date + "</li>" +
                 "<li><strong>Heure :</strong> " + heureDebut + " – " + heureFin + "</li>" +
                 "<li><strong>Format :</strong> " + format + "</li>" +
-                (lien != null && !lien.isEmpty() ? "<li><strong>Lien d'accès :</strong> <a href='" + lien + "' style='color:#0f6d6d;'>" + lien + "</a></li>" : "") +
+                (lien != null && !lien.isEmpty()
+                        ? "<li><strong>Lien d'accès :</strong> <a href='" + lien + "' style='color:#0f6d6d;'>" + lien
+                                + "</a></li>"
+                        : "")
+                +
                 "</ul><br>" +
                 actionButton("Voir la séance dans mon espace", lien != null && !lien.isEmpty() ? lien : "#") +
                 "<br><br>Un rappel te sera envoyé 24 heures avant la séance.<br><br>" +
@@ -117,7 +121,11 @@ public class EmailTemplates {
                 "<li><strong>Date :</strong> " + date + "</li>" +
                 "<li><strong>Heure :</strong> " + heureDebut + " – " + heureFin + "</li>" +
                 "<li><strong>Format :</strong> " + format + "</li>" +
-                (lien != null && !lien.isEmpty() ? "<li><strong>Lien d'accès :</strong> <a href='" + lien + "' style='color:#0f6d6d;'>" + lien + "</a></li>" : "") +
+                (lien != null && !lien.isEmpty()
+                        ? "<li><strong>Lien d'accès :</strong> <a href='" + lien + "' style='color:#0f6d6d;'>" + lien
+                                + "</a></li>"
+                        : "")
+                +
                 "</ul><br>" +
                 actionButton("Accéder à ma séance", lien != null && !lien.isEmpty() ? lien : "#") +
                 "<br><br>À demain !<br><br>" +
@@ -249,7 +257,8 @@ public class EmailTemplates {
                 "<li><strong>Promotion :</strong> " + nomPromotion + "</li>" +
                 "</ul></div><br>" +
                 actionButton("Confirmer la séance", lienConfirmer) + "&nbsp;&nbsp;" +
-                "<a href='" + lienRefuser + "' style='display:inline-block;background:#c53030;color:#ffffff;padding:14px 24px;border-radius:12px;text-decoration:none;font-weight:700;margin:18px 0;'>Refuser la séance</a>"
+                "<a href='" + lienRefuser
+                + "' style='display:inline-block;background:#c53030;color:#ffffff;padding:14px 24px;border-radius:12px;text-decoration:none;font-weight:700;margin:18px 0;'>Refuser la séance</a>"
                 +
                 "<br><br>En cas de refus, le formateur en sera automatiquement notifié.<br><br>" +
                 "L'équipe ESSIKIA.";
@@ -310,6 +319,24 @@ public class EmailTemplates {
         return base("Administrateur", contenu);
     }
 
+    // email seance annulée : aux étudiants et au formateur, avec les détails de la
+    // séance et un message d'excuse
+    public static String seanceAnnuleeEtudiant(String module, String seance, String date) {
+        String contenu = "Nous sommes désolés de vous informer que la séance suivante a été annulée :<br><br>" +
+                "<ul style='padding-left:18px;line-height:1.7;color:#334e68;'>" +
+                "<li><strong>Module :</strong> " + module + "</li>" +
+                "<li><strong>Séance :</strong> " + seance + "</li>" +
+                "<li><strong>Date :</strong> " + date + "</li>" +
+                // "<li><strong>Heure :</strong> " + heureDebut + "</li>" +
+                "</ul><br>" +
+                "<p style='color:#334e68;line-height:1.8;'><strong>Message de l'administrateur :</strong><br>"
+
+                + "</p><br>" +
+                "Nous nous excusons pour ce désagrément et vous remercions de votre compréhension.<br><br>" +
+                "L'équipe ESSIKIA.";
+        return base("", contenu);
+    }
+
     // ─── Helpers privés ───────────────────────────────────────────────────────
 
     private static String codeBlock(String valeur) {
@@ -323,4 +350,7 @@ public class EmailTemplates {
                 + "' style='display:inline-block;background:#0f6d6d;color:#ffffff;padding:14px 24px;border-radius:12px;text-decoration:none;font-weight:700;margin:18px 0;'>"
                 + label + "</a>";
     }
+
+    // ──────────────────────────────────────────────────────────────────────────────
+
 }
