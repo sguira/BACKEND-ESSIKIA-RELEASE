@@ -21,10 +21,12 @@ import com.formation.demo.entities.Message;
 import com.formation.demo.entities.Modules;
 import com.formation.demo.entities.Planification;
 import com.formation.demo.entities.Promotion;
+import com.formation.demo.entities.PromotionModule;
 import com.formation.demo.entities.Seance;
 import com.formation.demo.entities.Utilisateur;
 import com.formation.demo.enumeration.PlanificationStatus;
 import com.formation.demo.repository.BloquedFormateurRepository;
+import com.formation.demo.repository.EtudiantRepo;
 import com.formation.demo.repository.FormateurRepo;
 import com.formation.demo.repository.MessageRepository;
 import com.formation.demo.repository.ModulesRepository;
@@ -40,6 +42,7 @@ import lombok.RequiredArgsConstructor;
 public class FormateurService {
 
     private final FormateurRepo formateurRepo;
+    private final EtudiantRepo etudiantRepo;
     private final PromotionRepository promotionRepo;
     private final GroupeService groupeService;
     private final EmailServiceImp emailService;
@@ -59,12 +62,16 @@ public class FormateurService {
         }
     }
 
-    public List<Promotion> listesDesPromotions(String id) {
+    public List<Promotion> listesDesPromotions(String formateurId) {
         try {
             List<Promotion> promotions = new ArrayList<>();
-            for (var promotion : promotionRepo.findAll()) {
-                if (promotion.getFormateur() != null && promotion.getFormateur().getId().equals(id)) {
-                    promotions.add(promotion);
+            for (Promotion promotion : promotionRepo.findAll()) {
+                if (promotion.getModules() == null) continue;
+                for (PromotionModule pm : promotion.getModules()) {
+                    if (pm.getFormateur() != null && pm.getFormateur().getId().equals(formateurId)) {
+                        promotions.add(promotion);
+                        break;
+                    }
                 }
             }
             return promotions;
@@ -191,8 +198,9 @@ public class FormateurService {
         String heureFin = planification.getDateFin() != null ? planification.getDateFin() : "";
         String format = (planification.getLink() != null && !planification.getLink().isEmpty())
                 ? "Visioconférence" : "Présentiel";
-        int nbApprenants = (promotion != null && promotion.getEtudiants() != null)
-                ? promotion.getEtudiants().size() : 0;
+        List<Etudiant> etudiants = promotion != null
+                ? getEtudiantsForPromotion(promotion.getId()) : new ArrayList<>();
+        int nbApprenants = etudiants.size();
 
         // Email 9 — Rappel au formateur
         try {
@@ -211,9 +219,9 @@ public class FormateurService {
         }
 
         // Email 4 — Rappel aux étudiants de la promotion
-        if (promotion != null && promotion.getEtudiants() != null) {
+        if (!etudiants.isEmpty()) {
             String lien = planification.getLink() != null ? planification.getLink() : "";
-            for (Etudiant etudiant : promotion.getEtudiants()) {
+            for (Etudiant etudiant : etudiants) {
                 try {
                     BodyEmail etudiantEmail = new BodyEmail();
                     etudiantEmail.setRecipient(etudiant.getEmail());
@@ -227,5 +235,19 @@ public class FormateurService {
                 }
             }
         }
+    }
+
+    private List<Etudiant> getEtudiantsForPromotion(String promotionId) {
+        List<Etudiant> result = new ArrayList<>();
+        for (Etudiant e : etudiantRepo.findAll()) {
+            if (e.getPromotions() == null) continue;
+            for (Promotion p : e.getPromotions()) {
+                if (promotionId.equals(p.getId())) {
+                    result.add(e);
+                    break;
+                }
+            }
+        }
+        return result;
     }
 }

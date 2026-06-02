@@ -3,12 +3,11 @@ package com.formation.demo.services;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bson.types.ObjectId;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestParam;
-
 import com.formation.demo.entities.Etudiant;
 import com.formation.demo.entities.Fichiers;
 import com.formation.demo.entities.Matiere;
@@ -112,8 +111,11 @@ public class ModuleService {
 
     public ResponseEntity<Modules> getModuleById(String id) {
         try {
+            System.out.println("Récupération du module par ID : " + id);
             return ResponseEntity.ok(modulesRepository.findById(id).orElse(null));
         } catch (Exception e) {
+            System.out.println("Erreur lors de la récupération du module : " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.badRequest().build();
         }
     }
@@ -193,16 +195,21 @@ public class ModuleService {
     }
 
     public List<Seance> getSeancesByModule(String moduleId) {
-        List<Seance> seances = new ArrayList<>();
-        for (Seance seance : seanceRepository.findAll()) {
-            if (seance.getModule() != null) {
-                if (seance.getModule().getId() != null && seance.getModule().getId().equals(moduleId)) {
-                    seances.add(seance);
+        try {
+            // return seanceRepository.findByModuleId(moduleId);
+            List<Seance> seances = seanceRepository.findAll();
+            System.out.println("Toutes les séances : " + seances.size());
+            List<Seance> seancesModule = new ArrayList<>();
+            for (Seance s : seances) {
+                if (s.getModule() != null && s.getModule().getId().equals(moduleId)) {
+                    seancesModule.add(s);
                 }
             }
-
+            return seancesModule;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
         }
-        return seances;
     }
 
     public void deleteSeanceFromModule(String moduleId, String seanceId) {
@@ -252,7 +259,7 @@ public class ModuleService {
         }
     }
 
-    // 
+    //
     public ResponseEntity<Object> updateDescription(String moduleId, String description) {
         try {
             Modules module = modulesRepository.findById(moduleId).orElse(null);
@@ -267,9 +274,5 @@ public class ModuleService {
             return ResponseEntity.status(400).body("Une erreur est survenue");
         }
     }
-
-
-
-
 
 }

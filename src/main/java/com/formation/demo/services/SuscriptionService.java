@@ -175,7 +175,9 @@ public class SuscriptionService {
         Suscription suscription = suscriptionRepo.findTopByUtilisateurIdOrderByStartDateDesc(utilisateur.getId())
                 .orElse(null);
         if (suscription == null) {
-            new RuntimeException("No subscriptions found for user ID: " + utilisateur.getId());
+            // new RuntimeException("No subscriptions found for user ID: " +
+            // utilisateur.getId());
+            return null;
         }
         return suscription.getOffre();
     }

@@ -30,7 +30,6 @@ public class SeanceService {
         return seanceRepository.findById(id).get();
     }
 
-
     public void updateSeanceDescription(String id, String description) {
         Seance seance = seanceRepository.findById(id).orElse(null);
         if (seance != null) {

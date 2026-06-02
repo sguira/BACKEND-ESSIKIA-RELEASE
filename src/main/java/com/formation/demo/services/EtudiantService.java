@@ -9,13 +9,13 @@ import java.util.Optional;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
 
 import com.formation.demo.dto.UserFollowPromotionItem;
 import com.formation.demo.entities.Etudiant;
 import com.formation.demo.entities.Matiere;
 import com.formation.demo.entities.Modules;
 import com.formation.demo.entities.Promotion;
+import com.formation.demo.entities.PromotionModule;
 import com.formation.demo.entities.Seance;
 import com.formation.demo.entities.SuiviCours;
 import com.formation.demo.entities.Utilisateur;
@@ -237,13 +237,19 @@ public class EtudiantService {
 
         Map<String, Integer> totalSeancesByModule = new HashMap<>();
         for (Promotion p : promotions) {
-            if (p.getModule() == null) {
+            if (p.getModules() == null || p.getModules().isEmpty()) {
                 continue;
             }
-            String moduleId = p.getModule().getId();
-            int nbSeance = totalSeancesByModule.computeIfAbsent(moduleId,
-                    id -> seanceService.getSeancesByModule(id).size());
-            int nbSeanceComplete = completedByModule.getOrDefault(moduleId, 0);
+            int nbSeance = 0;
+            int nbSeanceComplete = 0;
+            for (PromotionModule pm : p.getModules()) {
+                if (pm.getModule() == null)
+                    continue;
+                String moduleId = pm.getModule().getId();
+                nbSeance += totalSeancesByModule.computeIfAbsent(moduleId,
+                        id -> seanceService.getSeancesByModule(id).size());
+                nbSeanceComplete += completedByModule.getOrDefault(moduleId, 0);
+            }
             UserFollowPromotionItem item = UserFollowPromotionItem.builder()
                     .promotion(p)
                     .nbSeance(nbSeance)
@@ -253,26 +259,6 @@ public class EtudiantService {
         }
         System.out.println("items " + items.size());
         return items;
-    }
-
-    private int countCompletedSeancesForPromotion(String userId, Promotion promotion) {
-        int count = 0;
-        String moduleId = promotion.getModule().getId();
-        Utilisateur e = utilisateurRepo.findById(userId).get();
-        for (SuiviCours suivi : suiviCourRepository.findAll()) {
-            if (suivi.getUtilisateur() != null && suivi.getModule() != null) {
-                if (suivi.getUtilisateur().getId().equals(e.getId()) && suivi.getModule().getId().equals(moduleId)
-                        && suivi.isCompleted()) {
-                    count++;
-                }
-            }
-        }
-        return count;
-    }
-
-    private int countTotalSeancesForPromotion(Promotion promotion) {
-        String moduleId = promotion.getModule().getId();
-        return seanceService.getSeancesByModule(moduleId).size();
     }
 
     // leave promotion

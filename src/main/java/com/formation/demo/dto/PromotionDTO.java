@@ -1,20 +1,28 @@
 package com.formation.demo.dto;
 
-import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.formation.demo.entities.Promotion;
-
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
 
 @Data
-@RequiredArgsConstructor
-public class PromotionDTO implements Serializable {
+public class PromotionDTO {
 
-    // private String name;
-    private Promotion promotion;
-    private Module module;
-    // private List<AssignMatProf> matieres = new ArrayList<>();
+    private String name;
+    private String description;
+
+    // IDs des modules inclus dans la promotion (avec formateur optionnel)
+    private List<PromotionModuleDTO> modules = new ArrayList<>();
+
+    private LocalDate dateInscription;
+    private int joursAvantLancement;
+    private LocalDate dateDebut;
+    private LocalDate dateFin;
+
+    @Data
+    public static class PromotionModuleDTO {
+        private String moduleId;
+        private String formateurId; // optionnel à la création
+    }
 }

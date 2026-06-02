@@ -88,7 +88,8 @@ public class AdminService {
                     String format = (planification.getLink() != null && !planification.getLink().isEmpty())
                             ? "Visioconférence"
                             : "Présentiel";
-                    int nbApprenants = (promotion.getEtudiants() != null) ? promotion.getEtudiants().size() : 0;
+                    List<Etudiant> etudiants = promotionService.fetchAllStudentForPromotion(promotion.getId());
+                    int nbApprenants = etudiants.size();
                     String heureDebut = planification.getDateDebut() != null ? planification.getDateDebut() : "";
                     String heureFin = planification.getDateFin() != null ? planification.getDateFin() : "";
 
@@ -105,7 +106,6 @@ public class AdminService {
                     // Email 3 — Notification aux étudiants de la promotion
                     String nomFormateur = formateur.getPrenom() + " " + formateur.getNom();
                     final String finalFormattedDate = formattedDate;
-                    List<Etudiant> etudiants = promotionService.fetchAllStudentForPromotion(promotion.getId());
                     List<String> emailsEtudiants = etudiants.stream().map(Etudiant::getEmail).toList();
                     try {
                         BodyEmail etudiantEmail = new BodyEmail();

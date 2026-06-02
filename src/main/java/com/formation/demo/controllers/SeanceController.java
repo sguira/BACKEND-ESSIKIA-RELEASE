@@ -3,25 +3,16 @@ package com.formation.demo.controllers;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-
 import com.formation.demo.entities.Fichiers;
 import com.formation.demo.entities.Seance;
 import com.formation.demo.entities.VideoExplicative;
-import com.formation.demo.repository.FichierRepo;
 import com.formation.demo.repository.SeanceRepository;
-import com.formation.demo.services.FichierService;
-import com.formation.demo.services.FileService;
 import com.formation.demo.services.R2Service;
-import com.formation.demo.services.SupaBaseService;
 import com.formation.demo.services.VideoExplicativeService;
 
 import lombok.RequiredArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
+import org.bson.types.ObjectId;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -38,10 +29,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 public class SeanceController {
 
     private final SeanceRepository seanceRepository;
-    private final SupaBaseService supaBaseService;
-    private final FichierRepo fichierRepo;
     private final VideoExplicativeService videoExplicativeService;
-    private final FichierService fichierService;
     private final R2Service r2Service;
 
     @PostMapping("/add")
@@ -73,15 +61,7 @@ public class SeanceController {
 
     @GetMapping("/liste-seance/{id}")
     public ResponseEntity seanceBySubject(@PathVariable String id) {
-        List<Seance> seances = new ArrayList<>();
-        for (Seance seance : seanceRepository.findAll()) {
-            if (seance.getFormation() != null) {
-                if (seance.getFormation().getId() != null && seance.getFormation().getId().equals(id)) {
-                    seances.add(seance);
-                }
-            }
-        }
-        return ResponseEntity.ok().body(seances);
+        return ResponseEntity.ok().body(seanceRepository.findByFormationId(new ObjectId(id)));
     }
 
     @GetMapping("/video-explicative")

@@ -110,10 +110,11 @@ public class ModuleController {
     }
 
     @PostMapping("/update-description/{moduleId}")
-    public ResponseEntity<Object> updateDescription(@PathVariable String moduleId, @RequestBody Map<String,String> description) {
+    public ResponseEntity<Object> updateDescription(@PathVariable String moduleId,
+            @RequestBody Map<String, String> description) {
         System.out.println("Module ID: " + moduleId);
         System.out.println("Nouvelle description: " + description);
-        moduleService.updateDescription(moduleId, description.get("description") );
+        moduleService.updateDescription(moduleId, description.get("description"));
         return ResponseEntity.ok().body("Description du module mise à jour avec succès");
     }
 

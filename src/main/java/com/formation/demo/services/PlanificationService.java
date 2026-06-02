@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.formation.demo.email.BodyEmail;
 import com.formation.demo.email.EmailServiceImp;
 import com.formation.demo.email.EmailTemplates;
-import com.formation.demo.entities.Formateur;
 import com.formation.demo.entities.Groupe;
 import com.formation.demo.entities.Message;
 import com.formation.demo.entities.Modules;
@@ -50,7 +49,7 @@ public class PlanificationService {
         if (module == null) {
             throw new RuntimeException("Module non trouvé");
         }
-        Utilisateur formateur = promotion.getFormateur();
+        Utilisateur formateur = planification.getFormateur();
         Seance seance = seanceService.getById(planification.getSeanceId());
         List<Utilisateur> admins = new ArrayList<>();
         for (Utilisateur user : utilisateurRepo.findAll()) {
@@ -73,7 +72,7 @@ public class PlanificationService {
         }
 
         String nomFormateur = formateur.getPrenom() + " " + formateur.getNom();
-        int nbApprenants = (promotion.getEtudiants() != null) ? promotion.getEtudiants().size() : 0;
+        int nbApprenants = promotionService.fetchAllStudentForPromotion(promotion.getId()).size();
         String heureDebut = planification.getDateDebut() != null ? planification.getDateDebut() : "";
         String heureFin = planification.getDateFin() != null ? planification.getDateFin() : "—";
 
@@ -114,7 +113,7 @@ public class PlanificationService {
         }
 
         try {
-            Groupe groupe = promotionService.getgroupeBypromotionId(planification.getPromotionId());
+            Groupe groupe = promotionService.getGroupeByPromotionId(planification.getPromotionId());
             Message message = new Message();
             message.setContent("⚠️ Annulation de séance\n\n"
                     + "La séance initialement prévue le " + planification.getDateDebut() + " a été annulée.\n\n"
