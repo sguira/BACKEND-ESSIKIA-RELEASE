@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.formation.demo.dto.PromotionSuscriptionDTO;
@@ -63,6 +64,34 @@ public class SuscriptionController {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.badRequest().build();
+        }
+    }
+
+    // ── Bypass test — souscription sans Stripe ────────────────────────────────
+    // Réservé aux tests (bypassPayment = true côté Flutter).
+    @PostMapping("/bypass-register")
+    public ResponseEntity<?> bypassRegister(
+            @RequestParam String email,
+            @RequestParam(required = false) String offreId) {
+        try {
+            return ResponseEntity.ok(suscriptionService.bypassSuscription(email, offreId));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // ── Bypass test — rejoindre une promotion sans paiement ───────────────────
+    @PostMapping("/bypass-promotion")
+    public ResponseEntity<?> bypassPromotion(
+            @RequestParam String utilisateurId,
+            @RequestParam String promotionId) {
+        try {
+            suscriptionService.bypassPromotion(utilisateurId, promotionId);
+            return ResponseEntity.ok("Inscription promotion validée (bypass)");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
