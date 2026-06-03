@@ -25,8 +25,6 @@ public class PayementService {
             params.put("currency", paymentRequest.getCurrency() != null ? paymentRequest.getCurrency() : "eur");
             params.put("automatic_payment_methods", Map.of("enabled", true));
             PaymentIntent paymentIntent = PaymentIntent.create(params);
-            System.out.println("Payment Intent created: " + paymentIntent.getId());
-            System.out.println("Client Secret: " + paymentIntent.getClientSecret());
             return paymentIntent.getClientSecret();
         } catch (StripeException e) {
             System.err.println("Stripe error: " + e.getMessage());

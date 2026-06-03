@@ -185,7 +185,8 @@ public class SuscriptionService {
             return;
         }
 
-        // 1. Créer la souscription (pour que fetchMesPromotions via suscriptionRepo fonctionne)
+        // 1. Créer la souscription (pour que fetchMesPromotions via suscriptionRepo
+        // fonctionne)
         Suscription suscription = new Suscription();
         suscription.setUtilisateurId(utilisateur.getId());
         suscription.setEmail(utilisateur.getEmail());
@@ -194,7 +195,8 @@ public class SuscriptionService {
         suscription.setStatus("active");
         suscriptionRepo.save(suscription);
 
-        // 2. Ajouter la promotion dans utilisateur.promotions (pour que getGroupesForUser fonctionne)
+        // 2. Ajouter la promotion dans utilisateur.promotions (pour que
+        // getGroupesForUser fonctionne)
         utilisateur.ajouterPromotion(promotion);
         utilisateurRepo.save(utilisateur);
 

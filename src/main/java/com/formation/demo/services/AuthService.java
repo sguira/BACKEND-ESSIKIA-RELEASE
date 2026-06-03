@@ -46,7 +46,7 @@ public class AuthService {
     @Transactional
     public ResponseEntity<Object> register(Utilisateur utilisateur) {
 
-        System.out.println("Mot de passe " + utilisateur.getPassword() + "\n\n");
+        
 
         Utilisateur u = utilisateurRepo.findByEmail(utilisateur.getEmail()).orElse(null);
         Etudiant e_ = etudiantRepo.findByEmail(utilisateur.getEmail());
@@ -73,7 +73,7 @@ public class AuthService {
                     EmailTemplates.confirmationCompte(utilisateur.getPrenom() != null ? utilisateur.getPrenom() : utilisateur.getNom(), e.getCodeConfirm()));
             System.out.println("Mon Mail :" + res);
             utilisateur.setCodeConfirm(code);
-            if (res.equals("Mail Sent Successfully...") || true) {
+            if (res.equals("Mail Sent Successfully...")) {
                 utilisateurRepo.save(utilisateur);
                 etudiantRepo.save(e);
                 return ResponseEntity.status(HttpStatus.CREATED).build();
@@ -203,7 +203,7 @@ public class AuthService {
                 }
             }
             System.out.println("Utilisateur trouvé :" + ut.getEmail());
-            System.out.println("Mot de passe fourni :" + u.getPassword());
+            
             System.out.println("Type:" + ut.getType());
 
             String type = ut.getType();
@@ -591,9 +591,9 @@ public class AuthService {
                 System.out.println("Code de réinitialisation incorrect pour l'email : " + email);
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Code de réinitialisation incorrect");
             }
-            System.out.println("Nouveau mot de passe : " + newPassword);
+            
             String encodedPassword = passwordEncoder.encode(newPassword);
-            System.out.println("Mot de passe encodé : " + encodedPassword);
+            
             u.setPassword(encodedPassword);
             utilisateurRepo.save(u);
 

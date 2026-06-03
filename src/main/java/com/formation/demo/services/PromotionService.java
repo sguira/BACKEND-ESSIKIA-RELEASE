@@ -157,11 +157,24 @@ public class PromotionService {
     }
 
     public List<Promotion> getPromotionForUser(String userId) {
-        List<String> promotionIds = new ArrayList<>();
+        // Fusionner les deux sources : table Suscription ET utilisateur.promotions
+        java.util.Set<String> promotionIds = new java.util.LinkedHashSet<>();
+
+        // Source 1 — table Suscription (bypassPromotion, module-suscription)
         souscriptionRepo.findAll().stream()
                 .filter(s -> userId.equals(s.getUtilisateurId()) && s.getPromotionId() != null)
                 .forEach(s -> promotionIds.add(s.getPromotionId()));
 
+        // Source 2 — utilisateur.promotions (followPromotion, inscription directe)
+        utilisateurRepo.findById(userId).ifPresent(u -> {
+            if (u.getPromotions() != null) {
+                u.getPromotions().stream()
+                        .filter(p -> p.getId() != null)
+                        .forEach(p -> promotionIds.add(p.getId()));
+            }
+        });
+
+        // Récupérer les données fraîches depuis le repository
         List<Promotion> result = new ArrayList<>();
         for (String promoId : promotionIds) {
             promotionRepository.findById(promoId).ifPresent(result::add);
