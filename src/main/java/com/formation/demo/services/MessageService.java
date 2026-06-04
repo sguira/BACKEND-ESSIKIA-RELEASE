@@ -26,7 +26,7 @@ public class MessageService {
     public ResponseEntity createMessage(Message message) {
         try {
             Message saveMessage = messageRepository.save(message);
-            simpMessagingTemplate.convertAndSend("/topic/group" + saveMessage.getGroupe(), saveMessage);
+            simpMessagingTemplate.convertAndSend("/topic/group/" + saveMessage.getGroupe(), saveMessage);
             return ResponseEntity.ok(saveMessage);
         } catch (Exception e) {
             e.printStackTrace();

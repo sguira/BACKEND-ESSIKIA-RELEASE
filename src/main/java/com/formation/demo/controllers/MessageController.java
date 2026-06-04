@@ -88,6 +88,33 @@ public class MessageController {
         }
     }
 
+    // ── Épingler / désépingler un message (admin & formateur uniquement) ──────
+    @PutMapping("/{id}/pin")
+    public ResponseEntity<?> pinMessage(@PathVariable String id) {
+        try {
+            Message message = messageRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Message introuvable : " + id));
+            message.setPinned(true);
+            return ResponseEntity.ok(messageRepository.save(message));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(404).body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/{id}/unpin")
+    public ResponseEntity<?> unpinMessage(@PathVariable String id) {
+        try {
+            Message message = messageRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Message introuvable : " + id));
+            message.setPinned(false);
+            return ResponseEntity.ok(messageRepository.save(message));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(404).body(e.getMessage());
+        }
+    }
+
     @DeleteMapping("{id}")
     public ResponseEntity<?> deleteMessage(@PathVariable String id) {
         try {

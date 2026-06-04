@@ -23,5 +23,7 @@ public class Fichiers implements Serializable {
     private int size;
     private String description;
     private String url;
+    // ID de la promotion à laquelle ce fichier est restreint (null = tous)
+    private String promotionId;
 
 }

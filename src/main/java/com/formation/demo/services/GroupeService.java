@@ -22,11 +22,17 @@ public class GroupeService {
 
     private final GroupeRepository groupeRepository;
     private final PromotionRepository promotionRepository;
-    
+
     private final SuscriptionService suscriptionService;
 
     public ResponseEntity<List<Groupe>> allgroupes() {
-        return ResponseEntity.ok(groupeRepository.findAll());
+        List<Groupe> groupes = new ArrayList<Groupe>();
+        for (var item : groupeRepository.findAll()) {
+            if (item.getPromotion() != null) {
+                groupes.add(item);
+            }
+        }
+        return ResponseEntity.ok(groupes);
     }
 
     public ResponseEntity<Groupe> createGroupe(Groupe groupe) {

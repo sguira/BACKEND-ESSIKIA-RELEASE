@@ -59,7 +59,10 @@ public class ConfigurationSecurity {
                                                                 .requestMatchers("/api/v1/docs/**",
                                                                                 "api/v1/swagger-ui/**", "swagger-ui/**",
                                                                                 "/swagger-ui/index.html",
-                                                                                "/v3/api-docs/**", "/ws/**")
+                                                                                "/v3/api-docs/**",
+                                                                                // WebSocket STOMP + SockJS (handshake HTTP + frames)
+                                                                                "/ws/**", "/ws/info",
+                                                                                "/ws/*/websocket")
                                                                 .permitAll()
                                                                 .requestMatchers("/login/oauth2/**",
                                                                                 "https://accounts.google.com/signin/oauth/**")

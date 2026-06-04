@@ -1,8 +1,6 @@
 package com.formation.demo.entities;
 
-import java.sql.Date;
 import java.time.Instant;
-import java.time.LocalDate;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
@@ -35,5 +33,8 @@ public class Message {
     private boolean isDelete = false;
     private String type;
     private Fichiers fichiers;
+
+    // Message épinglé par admin/formateur dans le groupe
+    private boolean pinned = false;
 
 }
