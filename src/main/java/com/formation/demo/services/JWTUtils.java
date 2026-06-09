@@ -25,7 +25,7 @@ public class JWTUtils {
     @Value("${app.secret-key}")
     private String secreykey;
 
-    private long delay = 86400000;
+    private long delay = 604800000; // 7 jours en millisecondes
 
     // private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS512);
 

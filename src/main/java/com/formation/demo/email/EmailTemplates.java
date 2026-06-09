@@ -8,6 +8,7 @@ public class EmailTemplates {
 
         // ─── Layout de base ───────────────────────────────────────────────────────
         private static String base(String destinataire, String contenu) {
+                String logoHtml = "<div style='text-align:center;'><img src='cid:essikia-logo' alt='ESSIKIA' style='height:120px;max-width:340px;object-fit:contain;display:inline-block;'></div>";
                 return "<!DOCTYPE html>" +
                                 "<html lang='fr'>" +
                                 "<head>" +
@@ -20,8 +21,7 @@ public class EmailTemplates {
                                 "<div style='max-width:680px;margin:0 auto;padding:24px;'>" +
                                 "<div style='background:#0f6d6d;color:#ffffff;padding:28px 32px;border-radius:20px 20px 0 0;'>"
                                 +
-                                "<h1 style='margin:0;font-size:28px;font-weight:800;letter-spacing:0.6px;'>ESSIKIA</h1>"
-                                +
+                                logoHtml +
                                 "<p style='margin:8px 0 0;font-size:15px;opacity:0.92;'>Programme pédagogique pour maîtriser son argent et son avenir.</p>"
                                 +
                                 "</div>" +

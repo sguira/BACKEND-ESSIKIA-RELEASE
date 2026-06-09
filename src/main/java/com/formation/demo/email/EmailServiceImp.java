@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -81,16 +82,16 @@ public class EmailServiceImp implements interfaceSendMail {
         MimeMessage minMessage = javaMailSender.createMimeMessage();
         MimeMessageHelper mimeMessageHelper;
         try {
-            // ClassPathResource imagResource = new
-            // ClassPathResource("/static/image/lg.png");
             System.out.println("Sender :: " + sender + "\n\n\n");
             mimeMessageHelper = new MimeMessageHelper(minMessage, true, "UTF-8");
             mimeMessageHelper.setTo(email.recipient);
             mimeMessageHelper.setFrom(sender);
             mimeMessageHelper.setSubject(email.body);
             mimeMessageHelper.setText(htmlBody, true);
-            // mimeMessageHelper.addInline("imageId", imagResource);
-            // mimeMessageHelper.setBcc(email.body);
+            ClassPathResource logo = new ClassPathResource("assets/essikia2.png");
+            if (logo.exists()) {
+                mimeMessageHelper.addInline("essikia-logo", logo, "image/png");
+            }
             javaMailSender.send(minMessage);
             return "Mail Sent Successfully...";
         } catch (Exception e) {
@@ -109,6 +110,10 @@ public class EmailServiceImp implements interfaceSendMail {
             helper.setTo(email.getRecipient());
             helper.setSubject(email.getBody());
             helper.setText(htmlBody, true);
+            ClassPathResource logo = new ClassPathResource("assets/essikia2.png");
+            if (logo.exists()) {
+                helper.addInline("essikia-logo", logo, "image/png");
+            }
             if (cc != null && !cc.isEmpty()) {
                 helper.setCc(cc.toArray(new String[0]));
             }
