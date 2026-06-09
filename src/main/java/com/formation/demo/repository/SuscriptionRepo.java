@@ -1,5 +1,6 @@
 package com.formation.demo.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -15,4 +16,7 @@ public interface SuscriptionRepo extends MongoRepository<Suscription, String> {
     Optional<Suscription> findTopByUtilisateurIdOrderByStartDateDesc(String utilisateurId);
 
     Optional<Suscription> findByStripeSubscriptionId(String stripeSubscriptionId);
+
+    // Returns all subscriptions for a user, most recent first
+    List<Suscription> findByUtilisateurIdOrderByStartDateDesc(String utilisateurId);
 }

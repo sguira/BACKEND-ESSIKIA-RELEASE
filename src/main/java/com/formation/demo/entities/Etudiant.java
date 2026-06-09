@@ -23,9 +23,6 @@ public class Etudiant extends Utilisateur {
     @DBRef
     List<Matiere> matieres = new ArrayList<>();
 
-    // @DBRef
-    // private List<Promotion> promotions = new ArrayList<>();
-
     @DBRef
     List<Note> notes;
 
@@ -44,21 +41,5 @@ public class Etudiant extends Utilisateur {
     public void suscribeModule(Modules mod) {
         this.modules.add(mod);
     }
-
-    // public void jointPromotion(Promotion p) {
-    // this.promotions.add(p);
-    // }
-
-    // public List<Promotion> getPromotions() {
-    // return this.promotions;
-    // }
-
-    // public void addPromotion(Promotion p) {
-    // this.promotions.add(p);
-    // }
-
-    // public void removePromotion(Promotion p) {
-    // this.promotions.remove(p);
-    // }
 
 }

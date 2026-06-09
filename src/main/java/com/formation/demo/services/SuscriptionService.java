@@ -60,9 +60,9 @@ public class SuscriptionService {
                 throw new RuntimeException("Email and OffreId are required");
             }
 
-            if (hasActiveSubscription) {
-                throw new RuntimeException("User already has an active subscription for this module");
-            }
+            // if (hasActiveSubscription) {
+            //     throw new RuntimeException("User already has an active subscription for this module");
+            // }
 
             Utilisateur utilisateur = utilisateurRepo.findByEmail(suscription.getEmail()).orElse(null);
             if (utilisateur == null) {
@@ -243,17 +243,16 @@ public class SuscriptionService {
     public Offre getUserOffre(String email) {
         Utilisateur utilisateur = utilisateurRepo.findByEmail(email).orElse(null);
         if (utilisateur == null) {
-            new RuntimeException("User not found with ID: " + email);
-        }
-        System.out.println("User found: " + utilisateur.getEmail() + ", ID: " + utilisateur.getId());
-        Suscription suscription = suscriptionRepo.findTopByUtilisateurIdOrderByStartDateDesc(utilisateur.getId())
-                .orElse(null);
-        if (suscription == null) {
-            // new RuntimeException("No subscriptions found for user ID: " +
-            // utilisateur.getId());
             return null;
         }
-        return suscription.getOffre();
+        // Skip promotion-only subscriptions (offre == null) — always return the latest
+        // paid/bypass subscription that actually has an offer attached.
+        return suscriptionRepo.findByUtilisateurIdOrderByStartDateDesc(utilisateur.getId())
+                .stream()
+                .filter(s -> s.getOffre() != null && "active".equals(s.getStatus()))
+                .map(Suscription::getOffre)
+                .findFirst()
+                .orElse(null);
     }
 
 }
