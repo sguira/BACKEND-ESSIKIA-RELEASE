@@ -17,4 +17,6 @@ public class SuscriptionDTO {
     @NotNull
     private String paiementIntent;
 
+    private String codeReductionId; // optionnel
+
 }

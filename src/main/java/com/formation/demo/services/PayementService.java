@@ -18,12 +18,10 @@ public class PayementService {
     public String createPaymentIntent(IntentPaymentRequestDTO paymentRequest)
             throws StripeException {
         try {
-            // Todo 
-            long amount = Math.round(Double.parseDouble(paymentRequest.getAmount()) * 100); // centimes
+            long amount = Math.round(Double.parseDouble(paymentRequest.getAmount()) * 100);
             System.out.println("Amount (centimes): " + amount);
             Map<String, Object> params = new HashMap<>();
-            // Todo : amount dynamique
-            params.put("amount", 500); // amount in cents
+            params.put("amount", amount);
             params.put("currency", paymentRequest.getCurrency() != null ? paymentRequest.getCurrency() : "eur");
             params.put("automatic_payment_methods", Map.of("enabled", true));
             PaymentIntent paymentIntent = PaymentIntent.create(params);

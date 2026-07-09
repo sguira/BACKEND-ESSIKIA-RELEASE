@@ -38,6 +38,7 @@ public class SuscriptionService {
     private final OffreRepo offreRepo;
     private final PromotionRepository promotionRepository;
     private final PayementService payementService;
+    private final CodeReductionService codeReductionService;
 
     public Suscription suscription(SuscriptionDTO suscription) throws RuntimeException {
 
@@ -81,7 +82,11 @@ public class SuscriptionService {
             newSuscription.setStatus("active");
             newSuscription.setPrice(offre.getPrix());
             newSuscription.setEmail(suscription.getEmail());
-            return suscriptionRepo.save(newSuscription);
+            Suscription saved = suscriptionRepo.save(newSuscription);
+            if (suscription.getCodeReductionId() != null && !suscription.getCodeReductionId().isEmpty()) {
+                codeReductionService.incrementerUtilisations(suscription.getCodeReductionId());
+            }
+            return saved;
         } catch (Exception e) {
             throw new RuntimeException("Error processing subscription: " + e.getMessage());
         }
