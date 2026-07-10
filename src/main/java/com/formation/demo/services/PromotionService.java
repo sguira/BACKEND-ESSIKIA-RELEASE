@@ -1,5 +1,6 @@
 package com.formation.demo.services;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +17,7 @@ import com.formation.demo.email.EmailTemplates;
 import com.formation.demo.entities.Etudiant;
 import com.formation.demo.entities.Formateur;
 import com.formation.demo.entities.Groupe;
+import com.formation.demo.entities.ListeAttenteGlobale;
 import com.formation.demo.entities.Modules;
 import com.formation.demo.entities.Promotion;
 import com.formation.demo.entities.PromotionModule;
@@ -24,6 +26,7 @@ import com.formation.demo.enumeration.PromotionStatus;
 import com.formation.demo.repository.EtudiantRepo;
 import com.formation.demo.repository.FormateurRepo;
 import com.formation.demo.repository.GroupeRepository;
+import com.formation.demo.repository.ListeAttenteGlobaleRepository;
 import com.formation.demo.repository.ModulesRepository;
 import com.formation.demo.repository.PromotionRepository;
 import com.formation.demo.repository.SuiviCourRepository;
@@ -46,6 +49,7 @@ public class PromotionService {
     private final GroupeService groupeService;
     private final EmailServiceImp emailService;
     private final UtilisateurRepo utilisateurRepo;
+    private final ListeAttenteGlobaleRepository listeAttenteGlobaleRepo;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
@@ -86,6 +90,11 @@ public class PromotionService {
                     "Groupe de discussion de la promotion %s — espace d'échange entre étudiants et formateurs.",
                     saved.getName()));
             groupeRepository.save(groupe);
+
+            // Si les inscriptions sont déjà ouvertes, migrer la liste d'attente globale
+            if (saved.getStatus() == PromotionStatus.INSCRIPTION_OUVERTE) {
+                migrerListeAttenteGlobale(saved);
+            }
 
             // Notification de la liste d'attente des promotions terminées
             notifierListeAttente(saved);
@@ -231,7 +240,70 @@ public class PromotionService {
         }
     }
 
-    // ─── Liste d'attente ──────────────────────────────────────────────────────
+    // ─── Liste d'attente globale (implicite) ──────────────────────────────────
+
+    public ResponseEntity<Object> ajouterListeAttenteGlobale(String userId) {
+        try {
+            // Le frontend envoie DataController.user.id qui est l'id Utilisateur
+            // (le login retourne un Utilisateur, pas un Etudiant).
+            // On résout vers l'id Etudiant pour que la cross-référence côté admin
+            // fonctionne.
+            String etudiantId = userId;
+            Utilisateur utilisateur = utilisateurRepo.findById(userId).orElse(null);
+            if (utilisateur != null) {
+                Etudiant etudiant = etudiantRepo.findByEmail(utilisateur.getEmail());
+                if (etudiant != null) {
+                    etudiantId = etudiant.getId();
+                }
+            }
+
+            if (listeAttenteGlobaleRepo.existsByEtudiantId(etudiantId)) {
+                return ResponseEntity.ok("Déjà en liste d'attente de la prochaine promotion");
+            }
+            ListeAttenteGlobale entry = new ListeAttenteGlobale();
+            entry.setEtudiantId(etudiantId);
+            entry.setDateAjout(LocalDateTime.now());
+            listeAttenteGlobaleRepo.save(entry);
+            return ResponseEntity.ok("Ajouté à la liste d'attente de la prochaine promotion");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    public ResponseEntity<Object> getListeAttenteGlobale() {
+        try {
+            return ResponseEntity.ok(listeAttenteGlobaleRepo.findAll());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    public ResponseEntity<Object> retirerListeAttenteGlobale(String etudiantId) {
+        try {
+            listeAttenteGlobaleRepo.deleteByEtudiantId(etudiantId);
+            return ResponseEntity.ok("Retiré de la liste d'attente globale");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    // Transfère tous les étudiants de la liste globale vers la listeAttente
+    // de la promotion donnée, puis vide la liste globale.
+    private void migrerListeAttenteGlobale(Promotion promo) {
+        List<ListeAttenteGlobale> liste = listeAttenteGlobaleRepo.findAll();
+        if (liste.isEmpty())
+            return;
+        for (ListeAttenteGlobale entry : liste) {
+            promo.ajouterEnListeAttente(entry.getEtudiantId());
+        }
+        promotionRepository.save(promo);
+        listeAttenteGlobaleRepo.deleteAll(liste);
+    }
+
+    // ─── Liste d'attente (par promotion) ──────────────────────────────────────
 
     public ResponseEntity<Object> ajouterListeAttente(String promotionId, String etudiantId) {
         try {
@@ -298,10 +370,15 @@ public class PromotionService {
         try {
             List<Promotion> promotions = promotionRepository.findAll();
             for (Promotion p : promotions) {
+                PromotionStatus ancien = p.getStatus();
                 PromotionStatus nouveau = p.calculerStatut();
-                if (nouveau != p.getStatus()) {
+                if (nouveau != ancien) {
                     p.setStatus(nouveau);
                     promotionRepository.save(p);
+                    // Dès que les inscriptions s'ouvrent, migrer la liste d'attente globale
+                    if (nouveau == PromotionStatus.INSCRIPTION_OUVERTE) {
+                        migrerListeAttenteGlobale(p);
+                    }
                 }
             }
         } catch (Exception e) {

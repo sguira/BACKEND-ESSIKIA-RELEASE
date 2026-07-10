@@ -24,8 +24,8 @@ public class Promotion {
     private List<PromotionModule> modules = new ArrayList<>();
 
     // Dates clés
-    private LocalDate dateInscription;     // date d'ouverture des inscriptions
-    private int joursAvantLancement;       // délai entre dateInscription et dateDebut
+    private LocalDate dateInscription; // date d'ouverture des inscriptions
+    private int joursAvantLancement; // délai entre dateInscription et dateDebut
     private LocalDate dateDebut;
     private LocalDate dateFin;
 

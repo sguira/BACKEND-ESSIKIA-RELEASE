@@ -76,7 +76,24 @@ public class PromotionController {
         }
     }
 
-    // ─── Liste d'attente ──────────────────────────────────────────────────────
+    // ─── Liste d'attente globale (implicite) ──────────────────────────────────
+
+    @GetMapping("/liste-attente-globale")
+    public ResponseEntity<Object> getListeAttenteGlobale() {
+        return promotionService.getListeAttenteGlobale();
+    }
+
+    @PostMapping("/liste-attente-globale/{etudiantId}")
+    public ResponseEntity<Object> ajouterListeAttenteGlobale(@PathVariable String etudiantId) {
+        return promotionService.ajouterListeAttenteGlobale(etudiantId);
+    }
+
+    @DeleteMapping("/liste-attente-globale/{etudiantId}")
+    public ResponseEntity<Object> retirerListeAttenteGlobale(@PathVariable String etudiantId) {
+        return promotionService.retirerListeAttenteGlobale(etudiantId);
+    }
+
+    // ─── Liste d'attente (par promotion) ──────────────────────────────────────
 
     @PostMapping("/{promotionId}/liste-attente/{etudiantId}")
     public ResponseEntity<Object> ajouterListeAttente(
