@@ -12,6 +12,8 @@ import com.formation.demo.services.VideoExplicativeService;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.Map;
+
 import org.bson.types.ObjectId;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -173,11 +175,15 @@ public class SeanceController {
     // modification de la description de la seance
     @PostMapping("/update-description/{seanceId}")
     public ResponseEntity<?> updateSeanceDescription(@PathVariable String seanceId,
-            @RequestBody String newDescription) {
+            @RequestBody Map<String, Object> description) {
         try {
             Seance seance = seanceRepository.findById(seanceId).orElse(null);
             if (seance == null) {
                 return ResponseEntity.status(404).body("Aucune seance trouvée");
+            }
+            String newDescription = (String) description.get("description");
+            if (newDescription == null) {
+                return ResponseEntity.status(400).body("La description est manquante dans la requête");
             }
             seance.setDescription(newDescription);
             seanceRepository.save(seance);

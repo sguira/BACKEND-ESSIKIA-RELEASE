@@ -45,10 +45,12 @@ public class UtilisateurService {
         utilisateur.setTelephone(user.getTelephone());
         utilisateur.setAdresse(user.getAdresse());
         utilisateur.setObjectif(user.getObjectif());
-        etudiant.setAdresse(user.getAdresse());
-        etudiant.setProfession(user.getProfession());
-        etudiant.setObjectif(user.getObjectif());
-        etudiantRepo.save(etudiant);
+        if (etudiant != null) {
+            etudiant.setAdresse(user.getAdresse());
+            etudiant.setProfession(user.getProfession());
+            etudiant.setObjectif(user.getObjectif());
+            etudiantRepo.save(etudiant);
+        }
         System.out.println("Informations de l'étudiant mises à jour pour l'utilisateur ID: " + email);
         // Mettez à jour d'autres champs selon vos besoins
         utilisateurRepository.save(utilisateur);
