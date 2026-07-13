@@ -12,7 +12,6 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
-import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 
 @Service
@@ -24,68 +23,47 @@ public class EmailServiceImp implements interfaceSendMail {
     @Value("${spring.mail.username}")
     private String sender;
 
+    @Value("${spring.mail.from.name}")
+    private String senderName;
+
     @Override
     public String sendSimpleMessage(BodyEmail details) {
-
-        // Try block to check for exceptions
         try {
-
-            // Creating a simple mail message
             SimpleMailMessage mailMessage = new SimpleMailMessage();
-
-            // Setting up necessary details
-            System.out.print("Sender :: " + sender + "\n\n\n");
-            mailMessage.setFrom(sender);
+            mailMessage.setFrom(senderName + " <" + sender + ">");
             mailMessage.setTo(details.getRecipient());
             mailMessage.setText(details.getMessage());
             mailMessage.setSubject(details.getBody());
-            // Sending the mail
             javaMailSender.send(mailMessage);
             return "Mail Sent Successfully...";
-        }
-
-        // Catch block to handle the exceptions
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return "Error while Sending Mail";
         }
     }
 
     public String sendSimpleMessage(BodyEmail details, String from) {
-
-        // Try block to check for exceptions
         try {
-
-            // Creating a simple mail message
             SimpleMailMessage mailMessage = new SimpleMailMessage();
-
-            // Setting up necessary details
             mailMessage.setFrom(from);
             mailMessage.setTo(details.getRecipient());
             mailMessage.setText(details.getMessage());
             mailMessage.setSubject(details.getBody());
-
-            // Sending the mail
             javaMailSender.send(mailMessage);
             return "Mail Sent Successfully...";
-        }
-
-        // Catch block to handle the exceptions
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return "Error while Sending Mail";
         }
     }
 
     public String sendHtlmlMail(BodyEmail email, String htmlBody) {
-
         MimeMessage minMessage = javaMailSender.createMimeMessage();
         MimeMessageHelper mimeMessageHelper;
         try {
-            System.out.println("Sender :: " + sender + "\n\n\n");
             mimeMessageHelper = new MimeMessageHelper(minMessage, true, "UTF-8");
             mimeMessageHelper.setTo(email.recipient);
-            mimeMessageHelper.setFrom(sender);
+            mimeMessageHelper.setFrom(sender, senderName);
             mimeMessageHelper.setSubject(email.body);
             mimeMessageHelper.setText(htmlBody, true);
             ClassPathResource logo = new ClassPathResource("assets/essikia2.png");
@@ -98,15 +76,13 @@ public class EmailServiceImp implements interfaceSendMail {
             e.printStackTrace();
             return "Error while Sending Mail";
         }
-
     }
 
-    // Envoie un seul email HTML à un destinataire principal avec plusieurs adresses en CC
     public String sendHtmlMailWithCc(BodyEmail email, String htmlBody, List<String> cc) {
         try {
             MimeMessage mimeMessage = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-            helper.setFrom(sender);
+            helper.setFrom(sender, senderName);
             helper.setTo(email.getRecipient());
             helper.setSubject(email.getBody());
             helper.setText(htmlBody, true);
@@ -125,43 +101,23 @@ public class EmailServiceImp implements interfaceSendMail {
         }
     }
 
-    // Method 2
-    // To send an email with attachment
     @Override
     public String sendEmailWithAttachment(BodyEmail details) {
-        // Creating a mime message
         jakarta.mail.internet.MimeMessage mimeMessage = javaMailSender.createMimeMessage();
         MimeMessageHelper mimeMessageHelper;
-
         try {
-
-            // Setting multipart as true for attachments to
-            // be send
             mimeMessageHelper = new MimeMessageHelper(mimeMessage, true);
-            mimeMessageHelper.setFrom(sender);
+            mimeMessageHelper.setFrom(sender, senderName);
             mimeMessageHelper.setTo(details.getRecipient());
             mimeMessageHelper.setText(details.getMessage());
-            mimeMessageHelper.setSubject(
-                    details.getBody());
-
-            // Adding the attachment
-            FileSystemResource file = new FileSystemResource(
-                    new File(details.getAttachement()));
-
-            mimeMessageHelper.addAttachment(
-                    file.getFilename(), file);
-
-            // Sending the mail
+            mimeMessageHelper.setSubject(details.getBody());
+            FileSystemResource file = new FileSystemResource(new File(details.getAttachement()));
+            mimeMessageHelper.addAttachment(file.getFilename(), file);
             javaMailSender.send(mimeMessage);
             return "Mail sent Successfully";
-        }
-
-        // Catch block to handle MessagingException
-        catch (MessagingException e) {
-
-            // Display message when exception occurred
+        } catch (Exception e) {
+            e.printStackTrace();
             return "Error while sending mail!!!";
         }
     }
-
 }

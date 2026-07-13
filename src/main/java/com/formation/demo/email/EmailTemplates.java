@@ -22,7 +22,7 @@ public class EmailTemplates {
                                 "<div style='background:#0f6d6d;color:#ffffff;padding:28px 32px;border-radius:20px 20px 0 0;'>"
                                 +
                                 logoHtml +
-                                "<p style='margin:8px 0 0;font-size:15px;opacity:0.92;'>Programme pédagogique pour maîtriser son argent et son avenir.</p>"
+                                "<p style='margin:8px 0 0;font-size:15px;opacity:0.92;'>Un programme pour te permettre de comprendre ton argent et prendre les bonnes décisions.</p>"
                                 +
                                 "</div>" +
                                 "<div style='background:#ffffff;padding:32px;border-radius:0 0 20px 20px;box-shadow:0 20px 40px rgba(15,23,42,0.08);'>"
@@ -455,6 +455,26 @@ public class EmailTemplates {
                                 + "L'équipe ESSIKIA.";
                 return base(nom, contenu);
 
+        }
+
+        // ─── Email — Inscription automatique à la promotion ──────────────────────
+        // Envoyé à : étudiant de la liste d'attente globale inscrit automatiquement
+        // Déclencheur : PromotionService.migrerListeAttenteGlobale
+        public static String inscriptionAutomatiquePromotion(String nom, String nomPromotion,
+                        String dateDebut, String dateFin) {
+                String contenu = "Bonne nouvelle ! Tu as été inscrit·e automatiquement à la nouvelle promotion ESSIKIA.<br><br>"
+                                + "Comme tu avais déjà finalisé ton paiement, ton accès est maintenant activé — aucune action supplémentaire n'est requise.<br><br>"
+                                + "<div style='background:#f3fafb;border:1px solid #cfece6;border-radius:18px;padding:24px;'>"
+                                + "<p style='margin:0 0 14px;font-size:15px;font-weight:700;color:#0f6d6d;'>Détails de ta promotion</p>"
+                                + "<ul style='margin:0;padding-left:18px;color:#334e68;line-height:1.7;'>"
+                                + "<li><strong>Promotion :</strong> " + nomPromotion + "</li>"
+                                + "<li><strong>Début de la formation :</strong> " + dateDebut + "</li>"
+                                + "<li><strong>Fin de la formation :</strong> " + dateFin + "</li>"
+                                + "</ul></div><br>"
+                                + "Connecte-toi à l'application ESSIKIA pour accéder à tes cours, rejoindre le groupe de ta promotion et commencer ton parcours.<br><br>"
+                                + "Pour toute question : <a href='mailto:contact@essikia.fr' style='color:#0f6d6d;'>contact@essikia.fr</a><br><br>"
+                                + "L'équipe ESSIKIA.";
+                return base(nom, contenu);
         }
 
         // ─── Helpers privés ───────────────────────────────────────────────────────

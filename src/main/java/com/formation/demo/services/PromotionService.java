@@ -290,16 +290,26 @@ public class PromotionService {
         }
     }
 
-    // Transfère tous les étudiants de la liste globale vers la listeAttente
-    // de la promotion donnée, puis vide la liste globale.
+    // Pour chaque étudiant de la liste d'attente globale, ajoute la promotion
+    // dans sa liste promotions, puis vide la liste globale.
     private void migrerListeAttenteGlobale(Promotion promo) {
         List<ListeAttenteGlobale> liste = listeAttenteGlobaleRepo.findAll();
         if (liste.isEmpty())
             return;
+
         for (ListeAttenteGlobale entry : liste) {
-            promo.ajouterEnListeAttente(entry.getEtudiantId());
+            try {
+                Etudiant etudiant = etudiantRepo.findById(entry.getEtudiantId()).orElse(null);
+                if (etudiant == null)
+                    continue;
+                etudiant.ajouterPromotion(promo);
+                etudiantRepo.save(etudiant);
+            } catch (Exception e) {
+                System.out.println(
+                        "Erreur migration liste attente pour " + entry.getEtudiantId() + ": " + e.getMessage());
+            }
         }
-        promotionRepository.save(promo);
+
         listeAttenteGlobaleRepo.deleteAll(liste);
     }
 
