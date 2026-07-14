@@ -46,8 +46,6 @@ public class AuthService {
     @Transactional
     public ResponseEntity<Object> register(Utilisateur utilisateur) {
 
-        
-
         Utilisateur u = utilisateurRepo.findByEmail(utilisateur.getEmail()).orElse(null);
         Etudiant e_ = etudiantRepo.findByEmail(utilisateur.getEmail());
         // System.out.println(u.getEmail());
@@ -70,7 +68,9 @@ public class AuthService {
             e.setCodeConfirm(code);
             email.setBody("Ton code de confirmation ESSIKIA");
             String res = emailService.sendHtlmlMail(email,
-                    EmailTemplates.confirmationCompte(utilisateur.getPrenom() != null ? utilisateur.getPrenom() : utilisateur.getNom(), e.getCodeConfirm()));
+                    EmailTemplates.confirmationCompte(
+                            utilisateur.getPrenom() != null ? utilisateur.getPrenom() : utilisateur.getNom(),
+                            e.getCodeConfirm()));
             System.out.println("Mon Mail :" + res);
             utilisateur.setCodeConfirm(code);
             if (res.equals("Mail Sent Successfully...")) {
@@ -151,7 +151,9 @@ public class AuthService {
             email.setBody("Création de votre compte formateur ESSIKIA");
 
             String res = emailService.sendHtlmlMail(email,
-                    EmailTemplates.bienvenuFormateur(formateur.getPrenom() != null ? formateur.getPrenom() : formateur.getNom(), password, formateur.getCodeConfirm()));
+                    EmailTemplates.bienvenuFormateur(
+                            formateur.getPrenom() != null ? formateur.getPrenom() : formateur.getNom(), password,
+                            formateur.getCodeConfirm()));
 
             if (!res.equals("Mail Sent Successfully...")) {
                 throw new Exception("Erreur lors de l'envoi de l'email");
@@ -203,7 +205,7 @@ public class AuthService {
                 }
             }
             System.out.println("Utilisateur trouvé :" + ut.getEmail());
-            
+
             System.out.println("Type:" + ut.getType());
 
             String type = ut.getType();
@@ -239,7 +241,7 @@ public class AuthService {
                     }
                 }
                 result.put("code", -1);
-                result.put("message", "Aucun compte trouvé");
+                result.put("message", "Mot de passe incorrect");
                 return ResponseEntity.status(HttpStatus.OK).body(result);
             } else {
                 if (type.equals("formateur")) {
@@ -306,7 +308,8 @@ public class AuthService {
                             BodyEmail welcomeEmail = new BodyEmail();
                             welcomeEmail.setRecipient(email);
                             welcomeEmail.setBody("Bienvenue sur ESSIKIA — Ton compte est activé");
-                            String prenom = utilisateur.getPrenom() != null ? utilisateur.getPrenom() : utilisateur.getNom();
+                            String prenom = utilisateur.getPrenom() != null ? utilisateur.getPrenom()
+                                    : utilisateur.getNom();
                             emailService.sendHtlmlMail(welcomeEmail,
                                     EmailTemplates.bienvenueEtudiant(prenom, "https://essikia.fr"));
                         } catch (Exception ex) {
@@ -591,9 +594,9 @@ public class AuthService {
                 System.out.println("Code de réinitialisation incorrect pour l'email : " + email);
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Code de réinitialisation incorrect");
             }
-            
+
             String encodedPassword = passwordEncoder.encode(newPassword);
-            
+
             u.setPassword(encodedPassword);
             utilisateurRepo.save(u);
 

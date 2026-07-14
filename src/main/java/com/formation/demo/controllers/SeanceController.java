@@ -172,6 +172,28 @@ public class SeanceController {
         }
     }
 
+    // modification du titre de la seance
+    @PostMapping("/update-title/{seanceId}")
+    public ResponseEntity<?> updateSeanceTitle(@PathVariable String seanceId,
+            @RequestBody Map<String, Object> body) {
+        try {
+            Seance seance = seanceRepository.findById(seanceId).orElse(null);
+            if (seance == null) {
+                return ResponseEntity.status(404).body("Aucune séance trouvée");
+            }
+            String newTitle = (String) body.get("title");
+            if (newTitle == null || newTitle.isBlank()) {
+                return ResponseEntity.status(400).body("Le titre est manquant");
+            }
+            seance.setTitle(newTitle);
+            seanceRepository.save(seance);
+            return ResponseEntity.ok().body(seance);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Erreur de mise à jour du titre");
+        }
+    }
+
     // modification de la description de la seance
     @PostMapping("/update-description/{seanceId}")
     public ResponseEntity<?> updateSeanceDescription(@PathVariable String seanceId,

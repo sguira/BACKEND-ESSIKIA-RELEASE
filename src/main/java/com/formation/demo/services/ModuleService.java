@@ -275,4 +275,19 @@ public class ModuleService {
         }
     }
 
+    public ResponseEntity<Object> updateNom(String moduleId, String nom) {
+        try {
+            Modules module = modulesRepository.findById(moduleId).orElse(null);
+            if (module == null) {
+                return ResponseEntity.status(404).body("Module non trouvé");
+            }
+            module.setNom(nom);
+            modulesRepository.save(module);
+            return ResponseEntity.ok(module);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(400).body("Une erreur est survenue");
+        }
+    }
+
 }

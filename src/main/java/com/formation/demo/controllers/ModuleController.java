@@ -118,4 +118,10 @@ public class ModuleController {
         return ResponseEntity.ok().body("Description du module mise à jour avec succès");
     }
 
+    @PostMapping("/update-nom/{moduleId}")
+    public ResponseEntity<Object> updateNom(@PathVariable String moduleId,
+            @RequestBody Map<String, String> body) {
+        return moduleService.updateNom(moduleId, body.get("nom"));
+    }
+
 }
