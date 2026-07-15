@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.formation.demo.dto.PromotionDTO;
+import com.formation.demo.entities.Etudiant;
 import com.formation.demo.entities.Promotion;
 import com.formation.demo.services.PromotionService;
 
@@ -83,14 +84,20 @@ public class PromotionController {
         return promotionService.getListeAttenteGlobale();
     }
 
-    @PostMapping("/liste-attente-globale/{etudiantId}")
-    public ResponseEntity<Object> ajouterListeAttenteGlobale(@PathVariable String etudiantId) {
-        return promotionService.ajouterListeAttenteGlobale(etudiantId);
+    @PostMapping("/liste-attente-globale/{email}")
+    public ResponseEntity<Object> ajouterListeAttenteGlobale(@PathVariable String email) {
+        return promotionService.ajouterListeAttenteGlobale(email);
     }
 
-    @DeleteMapping("/liste-attente-globale/{etudiantId}")
-    public ResponseEntity<Object> retirerListeAttenteGlobale(@PathVariable String etudiantId) {
-        return promotionService.retirerListeAttenteGlobale(etudiantId);
+    @DeleteMapping("/liste-attente-globale/{email}")
+    public ResponseEntity<Object> retirerListeAttenteGlobale(@PathVariable String email) {
+        return promotionService.retirerListeAttenteGlobale(email);
+    }
+
+    // ─── Étudiants inscrits à une promotion (vue admin) ───────────────────────
+    @GetMapping("/{promotionId}/etudiants")
+    public ResponseEntity<List<Etudiant>> getEtudiantsByPromotion(@PathVariable String promotionId) {
+        return ResponseEntity.ok(promotionService.fetchAllStudentForPromotion(promotionId));
     }
 
     // ─── Liste d'attente (par promotion) ──────────────────────────────────────

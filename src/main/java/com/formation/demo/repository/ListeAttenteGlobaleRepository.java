@@ -9,4 +9,8 @@ public interface ListeAttenteGlobaleRepository extends MongoRepository<ListeAtte
     boolean existsByEtudiantId(String etudiantId);
 
     void deleteByEtudiantId(String etudiantId);
+
+    boolean existsByEmail(String email);
+
+    void deleteByEmail(String email);
 }

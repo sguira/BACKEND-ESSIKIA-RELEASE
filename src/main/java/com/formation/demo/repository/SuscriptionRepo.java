@@ -15,6 +15,9 @@ public interface SuscriptionRepo extends MongoRepository<Suscription, String> {
 
     Optional<Suscription> findTopByUtilisateurIdOrderByStartDateDesc(String utilisateurId);
 
+    // Souscription la plus récente d'un utilisateur, retrouvée par email
+    Optional<Suscription> findTopByEmailOrderByStartDateDesc(String email);
+
     Optional<Suscription> findByStripeSubscriptionId(String stripeSubscriptionId);
 
     // Returns all subscriptions for a user, most recent first

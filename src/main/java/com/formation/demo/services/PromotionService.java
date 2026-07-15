@@ -23,6 +23,7 @@ import com.formation.demo.entities.Promotion;
 import com.formation.demo.entities.PromotionModule;
 import com.formation.demo.entities.Utilisateur;
 import com.formation.demo.enumeration.PromotionStatus;
+import com.formation.demo.enumeration.StatutListeGlobale;
 import com.formation.demo.repository.EtudiantRepo;
 import com.formation.demo.repository.FormateurRepo;
 import com.formation.demo.repository.GroupeRepository;
@@ -91,10 +92,10 @@ public class PromotionService {
                     saved.getName()));
             groupeRepository.save(groupe);
 
-            // Si les inscriptions sont déjà ouvertes, migrer la liste d'attente globale
-            if (saved.getStatus() == PromotionStatus.INSCRIPTION_OUVERTE) {
-                migrerListeAttenteGlobale(saved);
-            }
+            // Migrer la liste d'attente globale (étudiants ayant PAYÉ) vers cette
+            // nouvelle promotion dès sa création : ajout dans utilisateur.promotions
+            // + renseignement du promotionId sur leur souscription.
+            migrerListeAttenteGlobale(saved);
 
             // Notification de la liste d'attente des promotions terminées
             notifierListeAttente(saved);
@@ -242,28 +243,33 @@ public class PromotionService {
 
     // ─── Liste d'attente globale (implicite) ──────────────────────────────────
 
-    public ResponseEntity<Object> ajouterListeAttenteGlobale(String userId) {
+    // Le frontend envoie l'EMAIL de l'utilisateur connecté
+    // (DataController.user.email).
+    // La liste globale ne contient QUE des étudiants ayant payé (souscription ou
+    // bypass), donc le statut est toujours PAYE.
+    public ResponseEntity<Object> ajouterListeAttenteGlobale(String email) {
         try {
-            // Le frontend envoie DataController.user.id qui est l'id Utilisateur
-            // (le login retourne un Utilisateur, pas un Etudiant).
-            // On résout vers l'id Etudiant pour que la cross-référence côté admin
-            // fonctionne.
-            String etudiantId = userId;
-            Utilisateur utilisateur = utilisateurRepo.findById(userId).orElse(null);
-            if (utilisateur != null) {
-                Etudiant etudiant = etudiantRepo.findByEmail(utilisateur.getEmail());
-                if (etudiant != null) {
-                    etudiantId = etudiant.getId();
-                }
+            if (email == null || email.isBlank()) {
+                return ResponseEntity.badRequest().body("Email requis");
             }
 
-            if (listeAttenteGlobaleRepo.existsByEtudiantId(etudiantId)) {
+            // Résoudre le vrai id Etudiant à partir de l'email
+            Etudiant etudiant = etudiantRepo.findByEmail(email);
+            String etudiantId = (etudiant != null) ? etudiant.getId() : email;
+
+            // Dédoublonnage : par email OU par etudiantId (compat anciennes entrées)
+            if (listeAttenteGlobaleRepo.existsByEmail(email)
+                    || listeAttenteGlobaleRepo.existsByEtudiantId(etudiantId)) {
                 return ResponseEntity.ok("Déjà en liste d'attente de la prochaine promotion");
             }
+
             ListeAttenteGlobale entry = new ListeAttenteGlobale();
             entry.setEtudiantId(etudiantId);
+            entry.setEmail(email);
+            entry.setStatut(StatutListeGlobale.PAYE);
             entry.setDateAjout(LocalDateTime.now());
             listeAttenteGlobaleRepo.save(entry);
+            System.out.println("[ListeAttenteGlobale] Ajouté (PAYE) : " + email + " → etudiantId=" + etudiantId);
             return ResponseEntity.ok("Ajouté à la liste d'attente de la prochaine promotion");
         } catch (Exception e) {
             e.printStackTrace();
@@ -280,9 +286,17 @@ public class PromotionService {
         }
     }
 
-    public ResponseEntity<Object> retirerListeAttenteGlobale(String etudiantId) {
+    // Le frontend envoie l'email. On supprime par email, et aussi par etudiantId
+    // (vrai id + valeur brute) pour couvrir les anciennes entrées.
+    public ResponseEntity<Object> retirerListeAttenteGlobale(String email) {
         try {
-            listeAttenteGlobaleRepo.deleteByEtudiantId(etudiantId);
+            listeAttenteGlobaleRepo.deleteByEmail(email);
+            // compat : anciennes entrées où l'email était rangé dans etudiantId
+            listeAttenteGlobaleRepo.deleteByEtudiantId(email);
+            Etudiant etudiant = etudiantRepo.findByEmail(email);
+            if (etudiant != null) {
+                listeAttenteGlobaleRepo.deleteByEtudiantId(etudiant.getId());
+            }
             return ResponseEntity.ok("Retiré de la liste d'attente globale");
         } catch (Exception e) {
             e.printStackTrace();
@@ -299,11 +313,55 @@ public class PromotionService {
 
         for (ListeAttenteGlobale entry : liste) {
             try {
-                Etudiant etudiant = etudiantRepo.findById(entry.getEtudiantId()).orElse(null);
+                // On ne migre que les étudiants ayant PAYÉ.
+                if (entry.getStatut() != StatutListeGlobale.PAYE) {
+                    continue;
+                }
+
+                // 1. Retrouver l'utilisateur par email (fallback etudiantId legacy).
+                String email = entry.getEmail();
+                Etudiant etudiant = null;
+                if (email != null && !email.isBlank()) {
+                    etudiant = etudiantRepo.findByEmail(email);
+                }
+                if (etudiant == null && entry.getEtudiantId() != null) {
+                    if (entry.getEtudiantId().contains("@")) {
+                        email = entry.getEtudiantId();
+                        etudiant = etudiantRepo.findByEmail(email);
+                    } else {
+                        etudiant = etudiantRepo.findById(entry.getEtudiantId()).orElse(null);
+                    }
+                }
                 if (etudiant == null)
                     continue;
-                etudiant.ajouterPromotion(promo);
-                etudiantRepo.save(etudiant);
+                if (email == null || email.isBlank()) {
+                    email = etudiant.getEmail();
+                }
+
+                // 2. Ajouter la promotion sur le compte Utilisateur (source lue par
+                // « Mes cours » via getPromotionForUser) PUIS sauvegarder l'utilisateur.
+                final String emailUser = email;
+                utilisateurRepo.findByEmail(emailUser).ifPresent(u -> {
+                    if (!u.isFollowingPromotion(promo.getId())) {
+                        u.ajouterPromotion(promo);
+                        utilisateurRepo.save(u);
+                    }
+                });
+                // Mettre aussi à jour le profil Etudiant (vue admin des étudiants d'une
+                // promotion).
+                if (!etudiant.isFollowingPromotion(promo.getId())) {
+                    etudiant.ajouterPromotion(promo);
+                    etudiantRepo.save(etudiant);
+                }
+
+                // 3. Renseigner promotionId dans la souscription (la plus récente) de
+                // l'utilisateur.
+                if (email != null && !email.isBlank()) {
+                    souscriptionRepo.findTopByEmailOrderByStartDateDesc(email).ifPresent(s -> {
+                        s.setPromotionId(promo.getId());
+                        souscriptionRepo.save(s);
+                    });
+                }
             } catch (Exception e) {
                 System.out.println(
                         "Erreur migration liste attente pour " + entry.getEtudiantId() + ": " + e.getMessage());
@@ -404,18 +462,38 @@ public class PromotionService {
 
     public List<Etudiant> fetchAllStudentForPromotion(String promotionId) {
         try {
-            List<Etudiant> etudiants = new ArrayList<>();
-            for (Etudiant user : etudiantRepo.findAll()) {
-                if (user.getPromotions() != null) {
-                    for (var promo : user.getPromotions()) {
-                        if (promo.getId().equals(promotionId)) {
-                            etudiants.add(user);
-                            break;
-                        }
+            // Dédoublonnage par email (ou id à défaut)
+            java.util.Map<String, Etudiant> parCle = new java.util.LinkedHashMap<>();
+
+            // Source 1 — souscriptions portant ce promotionId. Couvre TOUS les
+            // parcours d'inscription : bypass « rejoindre en cours », module-suscription
+            // et auto-inscription depuis la liste d'attente (promotionId posé sur la
+            // souscription).
+            for (var s : souscriptionRepo.findAll()) {
+                if (promotionId.equals(s.getPromotionId())) {
+                    Etudiant e = null;
+                    if (s.getEmail() != null && !s.getEmail().isBlank()) {
+                        e = etudiantRepo.findByEmail(s.getEmail());
+                    }
+                    if (e == null && s.getUtilisateurId() != null) {
+                        e = etudiantRepo.findById(s.getUtilisateurId()).orElse(null);
+                    }
+                    if (e != null) {
+                        parCle.putIfAbsent(e.getEmail() != null ? e.getEmail() : e.getId(), e);
                     }
                 }
             }
-            return etudiants;
+
+            // Source 2 — profil Etudiant dont la liste promotions contient ce promotionId.
+            for (Etudiant user : etudiantRepo.findAll()) {
+                if (user.getPromotions() != null
+                        && user.getPromotions().stream()
+                                .anyMatch(p -> promotionId.equals(p.getId()))) {
+                    parCle.putIfAbsent(user.getEmail() != null ? user.getEmail() : user.getId(), user);
+                }
+            }
+
+            return new ArrayList<>(parCle.values());
         } catch (Exception e) {
             return new ArrayList<>();
         }
