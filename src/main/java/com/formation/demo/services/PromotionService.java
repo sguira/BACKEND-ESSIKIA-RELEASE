@@ -99,7 +99,6 @@ public class PromotionService {
 
             // Notification de la liste d'attente des promotions terminées
             notifierListeAttente(saved);
-
             return ResponseEntity.ok(saved);
         } catch (Exception e) {
             e.printStackTrace();
@@ -361,6 +360,30 @@ public class PromotionService {
                         s.setPromotionId(promo.getId());
                         souscriptionRepo.save(s);
                     });
+                }
+
+                // 4. Notifier l'étudiant : il a déjà payé, son accès à la promotion est activé.
+                if (email != null && !email.isBlank()) {
+                    try {
+                        String dateDebut = promo.getDateDebut() != null
+                                ? promo.getDateDebut().format(DATE_FORMATTER)
+                                : "À définir";
+                        String dateFin = promo.getDateFin() != null
+                                ? promo.getDateFin().format(DATE_FORMATTER)
+                                : "À définir";
+                        String nomComplet = ((etudiant.getPrenom() != null ? etudiant.getPrenom() : "")
+                                + " " + (etudiant.getNom() != null ? etudiant.getNom() : "")).trim();
+                        String html = EmailTemplates.inscriptionAutomatiquePromotion(
+                                nomComplet, promo.getName(), dateDebut, dateFin);
+                        BodyEmail body = new BodyEmail(
+                                "Ton accès à la promotion " + promo.getName() + " est activé — ESSIKIA",
+                                "", email, null);
+                        emailService.sendHtlmlMail(body, html);
+                        System.out.println("[Migration] Mail de notification envoyé à " + email);
+                    } catch (Exception mailEx) {
+                        System.out.println(
+                                "[Migration] Echec envoi mail à " + email + " : " + mailEx.getMessage());
+                    }
                 }
             } catch (Exception e) {
                 System.out.println(
