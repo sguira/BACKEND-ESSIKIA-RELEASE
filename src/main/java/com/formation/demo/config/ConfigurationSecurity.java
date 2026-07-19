@@ -54,7 +54,11 @@ public class ConfigurationSecurity {
                                 .authorizeHttpRequests(
                                                 request -> request
                                                                 .requestMatchers("/api/v1/auth/**", "/api/v1/upload/**",
-                                                                                "api/v1/offres/**")
+                                                                                "api/v1/offres/**",
+                                                                                // Proxy fichier R2 (images/docs) —
+                                                                                // public pour que <img>/web y accède
+                                                                                // sans en-tête d'auth.
+                                                                                "/api/v1/uploads/r2/file")
                                                                 .permitAll()
                                                                 .requestMatchers("/api/v1/docs/**",
                                                                                 "api/v1/swagger-ui/**", "swagger-ui/**",

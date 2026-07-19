@@ -9,13 +9,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.*;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.S3Client;
 
 @Service
@@ -72,6 +72,16 @@ public class R2Service {
         return s3Presigner.presignGetObject(presignRequest)
                 .url()
                 .toString();
+    }
+
+    // ✅ 3. Récupérer le contenu d'un fichier (proxy) — pour servir images &
+    // documents via le backend (compatible web : CORS géré côté serveur).
+    public ResponseBytes<GetObjectResponse> getObjectBytes(String key) {
+        GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                .bucket(bucket)
+                .key(key)
+                .build();
+        return s3Client.getObjectAsBytes(getObjectRequest);
     }
 
     public void deleteFile(String key) {
